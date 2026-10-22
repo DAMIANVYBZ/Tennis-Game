@@ -1,6 +1,8 @@
 # Baseline — Cross Court
 
-An original 3D browser tennis game with animated players, a faded blue hard court, a fenced club setting, and a first-to-21 match. Live: https://tennis-legon.pages.dev
+An original 3D browser tennis game with animated players, a faded blue hard court, three campus environments with seven selectable courts, and a first-to-21 match. Live: https://tennis-legon.pages.dev
+
+See [campus locations and integration URLs](docs/CAMPUS-COURTS.md) for the Athletic Oval, Commonwealth west and stadium/pool environments. Jean Nelson Aka’s basketball courtyard is excluded.
 
 ## Run locally
 

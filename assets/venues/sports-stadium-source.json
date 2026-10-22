@@ -1,0 +1,19 @@
+{
+  "selected": [
+    "School of Public Health, west and south wings",
+    "School of Public Health",
+    "School of Public Health, north block",
+    "University of Ghana Sports Stadium",
+    "University of Ghana Stadium Training Track",
+    "University of Ghana Swimming Pool and Tennis Courts",
+    "UG Gymnasium"
+  ],
+  "triangles": 44570,
+  "meshes": 32,
+  "anchor": [
+    538,
+    0.06,
+    1434.5
+  ],
+  "yaw": 0
+}

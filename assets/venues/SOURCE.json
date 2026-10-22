@@ -1,0 +1,82 @@
+{
+  "repository": "https://github.com/DAMIANVYBZ/Legon-world-Test",
+  "commit": "dc022c169a40514d783a494743cdabdebff4034b",
+  "extraction": "Source generators copied to an isolated temporary workspace. The source repository was read only. Neighbouring geometry/textures are exported from its site builders; terrain samples its groundHeight and roads follow its map polylines.",
+  "adjustments": [
+    "Oval schematic tennis enclosure extended from 23 m to 35 m to fit regulation play and safe run-offs; surrounding buildings, sports grounds and mapped roads retain source positions.",
+    "Original tennis nets replaced by the playable simulation net and matching neighbour nets, without changing their centres.",
+    "Custom source rendering shaders are not embedded; canvas textures, vertex colours and mesh geometry are retained. Opaque texture images compressed to JPEG.",
+    "The playable hard courts retain the requested faded blue; Commonwealth red-soil courts keep their source appearance."
+  ],
+  "sites": [
+    {
+      "site": "sports-stadium",
+      "file": "sports-stadium.glb",
+      "bytes": 2720792,
+      "sha256": "314386ebfcb6c93563f04b91e295f71565096aa21de59a585e7a62bb9b9758f2",
+      "source_anchor": [
+        538,
+        0.06,
+        1434.5
+      ],
+      "source_yaw": 0,
+      "source_models": [
+        "School of Public Health, west and south wings",
+        "School of Public Health",
+        "School of Public Health, north block",
+        "University of Ghana Sports Stadium",
+        "University of Ghana Stadium Training Track",
+        "University of Ghana Swimming Pool and Tennis Courts",
+        "UG Gymnasium"
+      ],
+      "source_triangles": 44570
+    },
+    {
+      "site": "commonwealth-west",
+      "file": "commonwealth-west.glb",
+      "bytes": 6403984,
+      "sha256": "59acadbb1ab06f36a7d9dc4586fad4c9093b4397cc08ac954d95a7807b8ae0fe",
+      "source_anchor": [
+        -630.5,
+        6.2,
+        -73
+      ],
+      "source_yaw": 0,
+      "source_models": [
+        "construction site beside the Doctorate building",
+        "Research and Innovation Office Complex",
+        "Research and Innovation Complex block 2",
+        "Research and Innovation Complex block 3",
+        "Research and Innovation Complex grounds",
+        "Commonwealth west tennis complex"
+      ],
+      "source_triangles": 79626
+    },
+    {
+      "site": "athletic-oval",
+      "file": "athletic-oval.glb",
+      "bytes": 1628952,
+      "sha256": "798bedcba3bab2f658e5a1f6b66f00b69cb9c8d884d4e925b439830bd5037cda",
+      "source_anchor": [
+        -77.5,
+        0.07,
+        376
+      ],
+      "source_yaw": 0,
+      "source_models": [
+        "Athletic Oval",
+        "Legon Hall Annex A",
+        "Legon Hall Annex C (Graduate Hostel)",
+        "SRC Union Building",
+        "Standard Chartered ATM (near SRC Union Building)",
+        "CC and Union Building car park",
+        "chalet -27,217",
+        "chalet -44,209",
+        "Alumni Association hotspot comfort zone",
+        "First Bank Ghana hotspot comfort zone"
+      ],
+      "source_triangles": 21764
+    }
+  ],
+  "owner_correction": "Jean Nelson Aka Hall courtyard is basketball, confirmed by the owner in this session. Despite the source halls.ts tennis label, it is deliberately excluded from tennis venues."
+}

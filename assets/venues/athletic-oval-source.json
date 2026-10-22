@@ -1,0 +1,22 @@
+{
+  "selected": [
+    "Athletic Oval",
+    "Legon Hall Annex A",
+    "Legon Hall Annex C (Graduate Hostel)",
+    "SRC Union Building",
+    "Standard Chartered ATM (near SRC Union Building)",
+    "CC and Union Building car park",
+    "chalet -27,217",
+    "chalet -44,209",
+    "Alumni Association hotspot comfort zone",
+    "First Bank Ghana hotspot comfort zone"
+  ],
+  "triangles": 21764,
+  "meshes": 30,
+  "anchor": [
+    -77.5,
+    0.07,
+    376
+  ],
+  "yaw": 0
+}
