@@ -29,6 +29,10 @@ On touchscreens, the left joystick moves. Hold a shot button on the right and dr
 
 Move into reach, hold a shot to prepare/charge, then release close to contact. Shots are never automatic for the human player. Overcharging, poor timing, and aggressive placement reduce accuracy. Shot types change flight time and bounce restitution. Sprint drains stamina; it recovers when resting.
 
+While preparing or serving, a curved 3D aiming guide shows the planned flight and bounce point. Move the right stick to change direction and depth. The arc uses the same ballistic planner as actual shots, assuming good timing; timing and reach can change the result. Orange indicates an unsafe planned shot.
+
+A prominent power bar follows your player and fills as you hold a shot button. Its percentage and the sidebar power meter track charge; overcharging turns the bar orange.
+
 Position assistance defaults to 40% and can be reduced to zero in Settings. It makes small nearby alignment corrections only while preparing a return. It is not a measured AI/human gameplay ratio.
 
 The ball has three-dimensional position/velocity, gravity, a first-bounce landing marker, and net collision. Serves have a visible toss and must land diagonally in the service box. Let a serve bounce before returning it. First-bounce out balls and missed second bounces lose the point. In this exhibition mode a service fault loses the point; second serves, lets, standard tennis games/sets and complete professional spin physics are not implemented.

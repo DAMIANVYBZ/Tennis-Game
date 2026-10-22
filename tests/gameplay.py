@@ -47,7 +47,16 @@ with sync_playwright() as p:
     page.keyboard.down('ArrowUp');input_before=js('__tennis.match.you.z')
     advance(.2,'__tennis.buildInput(1/120)');page.keyboard.up('ArrowUp')
     assert js('__tennis.match.you.z')<input_before
-    page.keyboard.down('Space');advance(.65);page.keyboard.up('Space')
+    page.keyboard.down('Space');advance(.3);js('__tennis.refresh()')
+    assert page.locator('#playerPower').is_visible()
+    low=js('parseInt(document.getElementById("playerPowerPercent").textContent)')
+    assert 30<low<60
+    assert js('__tennis.scene.getObjectByName("aiming-arc").visible')
+    left=js('__tennis.scene.getObjectByName("aim-target").position.x')
+    page.keyboard.down('e');advance(.25,'__tennis.buildInput(1/120)');page.keyboard.up('e');js('__tennis.refresh()')
+    assert js('__tennis.scene.getObjectByName("aim-target").position.x')>left
+    assert js('parseInt(document.getElementById("playerPowerPercent").textContent)')>low
+    advance(.1);page.keyboard.up('Space')
     assert js('__tennis.match.state')=='toss'
     advance(.7);assert js('__tennis.match.state')=='rally'
     assert js('__tennis.sound.events>0 && __tennis.sound.ctx.state==="running"')
@@ -95,7 +104,7 @@ with sync_playwright() as p:
     assert 'Your court' in page.locator('#overlay h1').inner_text()
     page.get_by_role('button',name='Play again').click();assert js('__tennis.match.points.you')==0
     page.set_viewport_size({'width':1440,'height':900});page.wait_for_timeout(150);js('__tennis.refresh()')
-    page.screenshot(path='/workspace/tennis-3d-final.png')
+    page.keyboard.down('Space');advance(.6);js('__tennis.refresh()');page.screenshot(path='/workspace/tennis-aim-power.png');page.keyboard.up('Space')
     assert not errors,errors
-    print('PASS: WebGL rendered scene, 2-axis keyboard/gamepad/joystick, shot charge/release and toss, audio activation/mute, pause, settings, mobile/portrait layout, match win/restart. No browser errors.')
+    print('PASS: WebGL rendered scene, 2-axis keyboard/gamepad/joystick, shot charge/release and toss, audio activation/mute, pause, settings, mobile/portrait layout, match win/restart. Aiming arc responds to input; overhead power bar fills. No browser errors.')
     browser.close()

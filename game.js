@@ -60,11 +60,32 @@ function pose(model,p,isYou,time){model.root.position.set(p.x,0,p.z);// Every ri
 const ballMesh=sphere(.085,'#e8f668',actors,18,12);const seamMaterial=new THREE.LineBasicMaterial({color:'#f6ffe0'});for(const side of [-1,1]){const pts=[];for(let i=0;i<=32;i++){const a=i/32*Math.PI*2;pts.push(V(Math.cos(a)*.065,Math.sin(a)*.085,side*.04*Math.cos(a*2)))}const curve=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),seamMaterial);ballMesh.add(curve)}
 const markerGeo=new THREE.RingGeometry(.17,.21,32);const landingMarker=new THREE.Mesh(markerGeo,new THREE.MeshBasicMaterial({color:'#d9efad',transparent:true,opacity:.65,side:THREE.DoubleSide}));landingMarker.rotation.x=-Math.PI/2;landingMarker.position.y=.06;actors.add(landingMarker);
 const aimMarker=new THREE.Mesh(new THREE.RingGeometry(.22,.25,32),new THREE.MeshBasicMaterial({color:'#ddefa8',transparent:true,opacity:.65,side:THREE.DoubleSide}));aimMarker.rotation.x=-Math.PI/2;aimMarker.position.y=.065;actors.add(aimMarker);
+// A thick 3D flight guide, using the same ballistic planner as actual shots.
+const aimArc=new THREE.InstancedMesh(new THREE.CylinderGeometry(.035,.035,1,7),new THREE.MeshBasicMaterial({color:'#e3f7a0',transparent:true,opacity:.88}),64);
+aimArc.name='aiming-arc';aimArc.instanceMatrix.setUsage(THREE.DynamicDrawUsage);aimArc.frustumCulled=false;aimArc.visible=false;actors.add(aimArc);aimMarker.name='aim-target';aimMarker.scale.setScalar(2.0);
+const arcTransform=new THREE.Object3D(),arcFrom=V(0,0,0),arcTo=V(0,0,0),arcDelta=V(0,0,0),arcUp=V(0,1,0);
+function updateAimArc(){
+ const serve=match.server==='you'&&(match.state==='serve'||match.state==='toss');
+ const preparing=match.state==='rally'&&!!(match.shot||match.pending);
+ aimArc.visible=aimMarker.visible=serve||preparing;
+ if(!aimArc.visible)return;
+ const held=match.shot,elapsed=held?match.time-held.time:0;
+ const planned=match.pending||(match.state==='toss'?match.tossPower:null)||{type:held?.type||'topspin',power:held?clamp(elapsed/.85,.15,1):.65,over:Math.max(0,elapsed-1.15),aim:match.aim.x,depth:match.aim.depth};
+ const near=Math.hypot(match.ball.x-match.you.x,match.ball.z-match.you.z)<2;
+ const contact=serve?null:{x:near?match.ball.x:match.you.x,y:near?clamp(match.ball.y,.5,2.4):1.1,z:near?match.ball.z:match.you.z};
+ const path=match.trajectory('you',planned,serve,1,contact);
+ const tNet=-path.z/path.vz,netY=path.y+path.vy*tNet-.5*9.81*tNet*tNet;
+ const unsafe=Math.abs(path.landing.x)>COURT.single||Math.abs(path.landing.z)>COURT.baseline||(tNet>0&&tNet<path.firstFlight&&netY<COURT.net+.075);
+ aimArc.material.color.set(unsafe?'#f4a38b':'#e3f7a0');aimMarker.material.color.copy(aimArc.material.color);aimMarker.material.opacity=.8;
+ const at=(t,p)=>p.set(path.x+path.vx*t,path.y+path.vy*t-.5*9.81*t*t,path.z+path.vz*t);
+ for(let i=0;i<64;i++){at(path.firstFlight*i/64,arcFrom);at(path.firstFlight*(i+1)/64,arcTo);arcDelta.subVectors(arcTo,arcFrom);const length=arcDelta.length();arcTransform.position.copy(arcFrom).add(arcTo).multiplyScalar(.5);arcTransform.quaternion.setFromUnitVectors(arcUp,arcDelta.normalize());arcTransform.scale.set(1,length,1);arcTransform.updateMatrix();aimArc.setMatrixAt(i,arcTransform.matrix)}
+ aimArc.instanceMatrix.needsUpdate=true;aimMarker.position.set(path.landing.x,.065,path.landing.z);
+}
 const ballShadow=new THREE.Mesh(new THREE.CircleGeometry(.13,20),new THREE.MeshBasicMaterial({color:'#223a4e',transparent:true,opacity:.32}));ballShadow.rotation.x=-Math.PI/2;ballShadow.position.y=.065;actors.add(ballShadow);
 const playerRing=new THREE.Mesh(new THREE.RingGeometry(.41,.44,40),new THREE.MeshBasicMaterial({color:'#e4efa7',transparent:true,opacity:.7,side:THREE.DoubleSide}));playerRing.rotation.x=-Math.PI/2;playerRing.position.y=.066;actors.add(playerRing);
 const trailCount=16,trailData=new Float32Array(trailCount*3),trailGeo=new THREE.BufferGeometry();trailGeo.setAttribute('position',new THREE.BufferAttribute(trailData,3));const trail=new THREE.Line(trailGeo,new THREE.LineBasicMaterial({color:'#e5edab',transparent:true,opacity:.35}));actors.add(trail);let trailHistory=[];
 let started=false,lookAngle=0,autoResume=false,lastState='menu',lastEnd=0;
-const match=new Match((event,data={})=>{sound.play(event,data);if(event==='point'){$('event').classList.remove('hidden');$('reason').textContent=data.reason;$('pointScore').textContent=match.points.you+' – '+match.points.ai;$('eventNote').textContent=data.winner==='you'?'POINT TO YOU':'POINT TO CLUB OPPONENT';trailHistory=[]}if(event==='ready'){$('event').classList.add('hidden');trailHistory=[]}if(event==='win'){$('overlay').classList.remove('hidden');$('overlay').querySelector('h1').textContent=data.winner==='you'?'Your court. Your win.':'One more match?';$('overlay').querySelector('p').textContent=`Final score: ${match.points.you} – ${match.points.ai}.`; $('play').textContent='Play again ↗'}});
+const match=new Match((event,data={})=>{sound.play(event,data);if(event==='start'){lookAngle=match.end*Math.PI;cameraCut=0}if(event==='point'){$('event').classList.remove('hidden');$('reason').textContent=data.reason;$('pointScore').textContent=match.points.you+' – '+match.points.ai;$('eventNote').textContent=data.winner==='you'?'POINT TO YOU':'POINT TO CLUB OPPONENT';trailHistory=[]}if(event==='ready'){$('event').classList.add('hidden');trailHistory=[]}if(event==='win'){$('overlay').classList.remove('hidden');$('overlay').querySelector('h1').textContent=data.winner==='you'?'Your court. Your win.':'One more match?';$('overlay').querySelector('p').textContent=`Final score: ${match.points.you} – ${match.points.ai}.`; $('play').textContent='Play again ↗'}});
 const keys={},touchMove={x:0,z:0};let padMove={x:0,z:0},padAim={x:0,y:0},padSprint=false,padButtons={},activePad=null,pointerTarget=null,dragAim=0,dragDepth=.72;
 function start(){sound.unlock();started=true;keysClear();match.start();$('overlay').classList.add('hidden');$('court').focus();trailHistory=[]}
 function keysClear(){for(const k of Object.keys(keys))delete keys[k];touchMove.x=touchMove.z=0;pointerTarget=null;match.cancel()}
@@ -96,20 +117,35 @@ function closePanel(id){$(id).classList.add('hidden');if(autoResume&&match.state
 $('help').onclick=()=>openPanel('helpPanel');$('settingsButton').onclick=()=>openPanel('settingsPanel');$('closeHelp').onclick=()=>closePanel('helpPanel');$('closeSettings').onclick=()=>closePanel('settingsPanel');$('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await $('arena').requestFullscreen()}catch{}};
 function resize(){const r=$('arena').getBoundingClientRect();renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.fov=camera.aspect<1?50:40;camera.updateProjectionMatrix()};new ResizeObserver(resize).observe($('arena'));resize();
 let last=performance.now(),cameraCut=0;
-function updateUI(){const charging=match.shot,charge=charging?clamp((match.time-charging.time)/.85,0,1):0;$('you').textContent=match.points.you;$('ai').textContent=match.points.ai;$('youServe').textContent=match.server==='you'?'●':'';$('aiServe').textContent=match.server==='ai'?'●':'';$('phase').textContent=match.state==='rally'?'LIVE':match.state==='paused'?'PAUSED':match.state==='point'?'POINT':match.state==='toss'?'SERVE':match.state==='over'?'FINAL':'SERVE';$('power').style.width=charge*100+'%';$('power').style.background=charging&&match.time-charging.time>1.15?'#efa596':'#d8ed9c';$('shotName').textContent=(charging?.type||match.pending?.type||'topspin').toUpperCase();$('rally').textContent=match.rally;$('stamina').style.width=match.you.stamina*100+'%';
+const powerAnchor=V(0,0,0);
+function updatePlayerPower(){
+ const held=match.shot,serving=match.state==='serve'&&match.server==='you',tossing=match.state==='toss'&&match.server==='you';
+ const visible=!!held||!!match.pending||serving||tossing;
+ $('playerPower').classList.toggle('hidden',!visible||!['serve','toss','rally'].includes(match.state));
+ if(!visible)return;
+ const elapsed=held?match.time-held.time:0;
+ const value=held?clamp(elapsed/.85,0,1):(match.pending?.power||(tossing?match.tossPower.power:0));
+ $('playerPowerPercent').textContent=Math.round(value*100)+'%';
+ $('playerPowerLabel').textContent=elapsed>1.15?'OVERCHARGED':held?'SHOT POWER':tossing?'SERVE POWER':match.pending?'RELEASED':'HOLD ✕ TO CHARGE';
+ $('playerPowerFill').style.width=value*100+'%';$('playerPowerFill').style.background=elapsed>1.15?'#f2a38a':'#d9f38e';
+ youModel.root.updateWorldMatrix(true,false);powerAnchor.set(0,2.65,0);youModel.root.localToWorld(powerAnchor);powerAnchor.project(camera);
+ const r=canvas.getBoundingClientRect();$('playerPower').style.left=clamp((powerAnchor.x*.5+.5)*r.width,78,r.width-78)+'px';$('playerPower').style.top=clamp((-powerAnchor.y*.5+.5)*r.height,70,r.height-80)+'px';
+}
+
+function updateUI(){const charging=match.shot,charge=charging?clamp((match.time-charging.time)/.85,0,1):0;$('you').textContent=match.points.you;$('ai').textContent=match.points.ai;$('youServe').textContent=match.server==='you'?'●':'';$('aiServe').textContent=match.server==='ai'?'●':'';$('phase').textContent=match.state==='rally'?'LIVE':match.state==='paused'?'PAUSED':match.state==='point'?'POINT':match.state==='toss'?'SERVE':match.state==='over'?'FINAL':'SERVE';$('power').style.width=charge*100+'%';$('power').style.background=charging&&match.time-charging.time>1.15?'#efa596':'#d8ed9c';$('shotName').textContent=(charging?.type||match.pending?.type||'topspin').toUpperCase();$('powerPercent').textContent=Math.round(charge*100)+'%';$('rally').textContent=match.rally;$('stamina').style.width=match.you.stamina*100+'%';
  let feedback=match.quality;if(match.state==='rally'&&match.ball.last==='ai'){const t=(match.you.z-match.ball.z)/(match.ball.vz||1),distance=Math.hypot(match.you.x-match.ball.x,match.you.z-match.ball.z);feedback=charging?(distance<2.6&&match.ball.y<2.8?'RELEASE NOW':'PREPARED'):match.pending?match.quality:'HOLD A SHOT';if(t<0&&distance>2.5)feedback='CHASE THE BALL'}if(charging&&match.state==='serve')feedback='RELEASE TO SERVE';$('timing').textContent=feedback;$('pause').textContent=match.state==='paused'?'▶':'Ⅱ';
  if(match.state==='paused'){$('event').classList.remove('hidden');$('reason').textContent='PAUSED';$('pointScore').textContent='Ⅱ';$('eventNote').textContent='OPTIONS / P TO RESUME'}else if(lastState==='paused')$('event').classList.add('hidden');
  $('hint').textContent=match.state==='serve'?(match.server==='you'?'Your serve · hold a shot, aim, release.':'Opponent serving · move to receive; let the serve bounce.'):match.state==='point'?((match.points.you+match.points.ai)%5===0?'Change of ends · next point shortly.':'Read the bounce. Find the open court.'):match.state==='paused'?'Take your time. Options or P to resume.':'Left stick moves · right stick aims · hold a shot, release near contact.';lastState=match.state;
 }
 function frame(now){requestAnimationFrame(frame);const dt=Math.min(.04,(now-last)/1000);last=now;pollPad();const input=buildInput(dt);match.tick(dt,input);if(lastEnd!==match.end){lastEnd=match.end;trailHistory=[];dragAim=0;dragDepth=.72}
  // Camera and actors rotate together on changeovers; scenery changes ends, controls stay camera-relative.
- const wantedAngle=match.end*Math.PI;lookAngle+=(wantedAngle-lookAngle)*Math.min(1,dt*3);actors.rotation.y=lookAngle;
+ const wantedAngle=match.end*Math.PI;lookAngle+=(wantedAngle-lookAngle)*Math.min(1,dt*3);actors.rotation.y=wantedAngle;
  pose(youModel,match.you,true,match.time);pose(aiModel,match.ai,false,match.time);ballMesh.position.set(match.ball.x,match.ball.y,match.ball.z);ballMesh.rotation.x+=dt*8;ballMesh.rotation.z+=dt*5;ballShadow.position.set(match.ball.x,.065,match.ball.z);ballShadow.scale.setScalar(1+match.ball.y*.17);ballShadow.material.opacity=clamp(.35-match.ball.y*.035,.08,.35);
- landingMarker.visible=match.state==='rally'&&match.ball.bounces===0;if(landingMarker.visible)landingMarker.position.set(match.ball.landing.x,.065,match.ball.landing.z);aimMarker.visible=!!match.shot||match.state==='serve';aimMarker.position.set(dragAim*3.7,.065,-(5.7+dragDepth*4.6));playerRing.position.set(match.you.x,.066,match.you.z);
+ landingMarker.visible=match.state==='rally'&&match.ball.bounces===0;if(landingMarker.visible)landingMarker.position.set(match.ball.landing.x,.065,match.ball.landing.z);updateAimArc();playerRing.position.set(match.you.x,.066,match.you.z);
  if(match.state==='rally'){trailHistory.unshift(ballMesh.position.clone());if(trailHistory.length>trailCount)trailHistory.pop()}else trailHistory=[];trail.visible=trailHistory.length>1;for(let i=0;i<trailCount;i++){const p=trailHistory[Math.min(i,trailHistory.length-1)]||ballMesh.position;trailData[i*3]=p.x;trailData[i*3+1]=p.y;trailData[i*3+2]=p.z}trailGeo.attributes.position.needsUpdate=true;trailGeo.computeBoundingSphere();
  cameraCut+=((match.state==='point'?1:0)-cameraCut)*dt*3;const aspect=camera.aspect,portrait=aspect<1,dist=portrait?40:21,height=portrait?28:12;
  const followX=clamp(match.ball.x,-4,4)*.10,cutPlayer=match[match.lastPointWinner||'you'];
  const normal=V(followX,height,dist),close=V(cutPlayer.x+5,5.6,cutPlayer.z+8);const pos=normal.lerp(close,cameraCut*.85);pos.applyAxisAngle(V(0,1,0),lookAngle);camera.position.copy(pos);
- const look=V(followX*.3,0,portrait?-.8:4.5).lerp(V(cutPlayer.x,1,cutPlayer.z),cameraCut*.85).applyAxisAngle(V(0,1,0),lookAngle);camera.lookAt(look);renderer.render(scene,camera);updateUI();}
+ const look=V(followX*.3,0,portrait?-.8:4.5).lerp(V(cutPlayer.x,1,cutPlayer.z),cameraCut*.85).applyAxisAngle(V(0,1,0),lookAngle);camera.lookAt(look);camera.updateMatrixWorld();updatePlayerPower();renderer.render(scene,camera);updateUI();}
 window.__tennis={match,renderer,scene,camera,sound,prepare,release,pollPad,buildInput,start,refresh:()=>frame(performance.now()),SHOTS: ['topspin','flat','slice','lob']};requestAnimationFrame(frame);
 window.addEventListener('error',event=>{if(!event.message?.includes('WebGL'))return;$('loadError').classList.remove('hidden')});

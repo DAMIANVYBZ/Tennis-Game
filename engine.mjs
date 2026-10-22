@@ -12,15 +12,16 @@ export class Match{
  cancel(){this.shot=null;this.pending=null}
  pause(){if(this.state==='paused'){this.state=this.pausedState;this.emit('resume')}else if(['serve','rally','toss','point'].includes(this.state)){this.pausedState=this.state;this.state='paused';this.cancel();this.emit('pause')}}
  score(winner,reason){if(!['rally','toss','serve'].includes(this.state))return;this.points[winner]++;this.lastPointWinner=winner;this.reason=reason;this.ball.alive=false;this.cancel();this.state='point';this.timer=2.3;this.quality=reason;this.emit('point',{winner,reason});const loser=winner==='you'?'ai':'you';if(this.points[winner]>=21&&this.points[winner]-this.points[loser]>=2){this.state='over';this.winner=winner;this.emit('win',{winner})}}
- launch(who,shot,serve=false,quality=1){const p=this[who],sign=who==='you'?-1:1,spec=SHOTS[shot.type],power=shot.power;
- const origin={x:serve?p.x:this.ball.x,z:serve?p.z:this.ball.z,y:serve?2.75:clamp(this.ball.y,.5,2.4)};
+ trajectory(who,shot,serve=false,quality=1,contact=null){const p=this[who],sign=who==='you'?-1:1,spec=SHOTS[shot.type],power=shot.power;
+ const origin=contact||{x:serve?p.x:this.ball.x,z:serve?p.z:this.ball.z,y:serve?2.75:clamp(this.ball.y,.5,2.4)};
  const risk=(1-quality)*(.5+(shot.type==='flat'?1.35:.5))+shot.over*.65;
- let tx=serve?(-Math.sign(p.x||1)*(1.3+((shot.aim+1)/2)*1.4)):shot.aim*3.7+Math.sign(shot.aim||1)*risk;
+ let tx=serve?(-Math.sign(p.x||1)*2+shot.aim*.7):shot.aim*3.7+Math.sign(shot.aim||1)*risk;
  let tz=sign*(serve?4.4:(5.7+shot.depth*4.6));
  let flight=(serve?1.18:spec.flight)*(1.13-power*.20)*(who==='ai'?{easy:1.15,normal:1,hard:.92}[this.difficulty]:1);
  if(!serve&&shot.type==='flat'&&quality<.35&&power>.8)flight*=.72;
- this.ball={...origin,vx:(tx-origin.x)/flight,vz:(tz-origin.z)/flight,vy:(.5*9.81*flight*flight+.075-origin.y)/flight,alive:true,bounces:0,last:who,type:shot.type,serve,spin:spec.spin,bounce:spec.bounce,landing:{x:tx,z:tz},firstFlight:flight};
- p.swing=1;p.side=Math.sign(tx-origin.x)||1;this.aiClock=.05;this.aiAimError=(this.random()-.5)*{easy:1.4,normal:.7,hard:.25}[this.difficulty];this.rally++;this.best=Math.max(this.best,this.rally);this.emit('hit',{who,power,type:shot.type,quality});
+ return {...origin,vx:(tx-origin.x)/flight,vz:(tz-origin.z)/flight,vy:(.5*9.81*flight*flight+.075-origin.y)/flight,alive:true,bounces:0,last:who,type:shot.type,serve,spin:spec.spin,bounce:spec.bounce,landing:{x:tx,z:tz},firstFlight:flight};
+ }
+ launch(who,shot,serve=false,quality=1){const p=this[who];this.ball=this.trajectory(who,shot,serve,quality);p.swing=1;p.side=Math.sign(this.ball.vx)||1;this.aiClock=.05;this.aiAimError=(this.random()-.5)*{easy:1.4,normal:.7,hard:.25}[this.difficulty];this.rally++;this.best=Math.max(this.best,this.rally);this.emit('hit',{who,power:shot.power,type:shot.type,quality});
  }
  hitYou(){const b=this.ball,p=this.you;if(!this.pending||b.last==='you'||!b.alive)return false;const age=this.time-this.pending.at;if(age>.25){this.pending=null;this.quality='TOO EARLY';return false}
  const distance=Math.hypot(b.x-p.x,b.z-p.z);if(distance>1.65||b.y<.32||b.y>2.6||(b.serve&&b.bounces===0))return false;
