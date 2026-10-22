@@ -132,3 +132,5 @@ Diving returns are manually triggered with **B**, **L1** on a standard-mapped PS
 Portrait phones now use a lower camera from behind the player, with gentle lateral following. The desktop match camera is unchanged; the aerial view is limited to the arrival sequence. Tests: `node tests/diving.mjs`, `python tests/diving.py`, and the existing service, automatic-contact, gameplay, character and arrival checks.
 
 On phones, power uses one compact HUD below the score area; the floating player power panel is hidden so it does not cover the player or ball. Landscape touch devices use a small HUD at the upper right. Desktop power displays are unchanged.
+
+The pause menu offers Resume and Quit to Home. Quitting abandons the unfinished match without awarding credits or recording a result; saved kit and settings remain. Gamepad D-pad selects an action, Cross confirms, and Circle or Options resumes.
