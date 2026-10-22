@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UG Legon Smash 3D - Figma UI/UX Kit & Interactive Prototype</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            ug: {
+              blue: '#002147',      // Official UG Midnight Blue / Indigo
+              blueDark: '#00122A',  // Deep UG Background Shade
+              blueSurface: '#0B1D3A',// Surface Panel
+              gold: '#D4AF37',      // Official UG Camel Gold
+              goldHover: '#C5A059', // Darker Gold Hover
+              goldLight: '#E6CA65', // Light Accent Gold
+              accent: '#E0115F'     // Subtle Crest Accent Magenta/Red
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          boxShadow: {
+            'neon-gold': '0 0 20px rgba(212, 175, 55, 0.4)',
+            'neon-blue': '0 0 20px rgba(0, 33, 71, 0.6)',
+            'glow-gold': '0 0 30px rgba(212, 175, 55, 0.25)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Glassmorphism custom styling for UG Theme */
+    .glass-panel {
+      background: rgba(11, 29, 58, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(212, 175, 55, 0.12);
+    }
+
+    /* Custom Scrollbar for sleek UI */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #00122A;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #0B1D3A;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #D4AF37;
+    }
+
+    /* Canvas Grid Pattern */
+    .figma-grid {
+      background-size: 32px 32px;
+      background-image: 
+        radial-gradient(circle, rgba(212, 175, 55, 0.12) 1px, transparent 1px);
+    }
+
+    /* Pulsing Target Glow */
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.8; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(1.15); }
+    }
+    .pulse-target {
+      animation: pulse-glow 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans overflow-hidden select-none bg-slate-950">
+
+  <!-- ========================================== -->
+  <!-- 1. TOP BAR: FIGMA CANVAS HEADER            -->
+  <!-- ========================================== -->
+  <header class="h-14 bg-ug-blueDark border-b border-ug-gold/30 flex items-center justify-between px-4 z-30 shrink-0">
+    <!-- File Info & Title -->
+    <div class="flex items-center space-x-3">
+      <div class="w-8 h-8 rounded-lg bg-ug-gold text-ug-blueDark flex items-center justify-center font-black text-xl shadow-neon-gold">
+        <i class="fa-solid fa-graduation-cap"></i>
+      </div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="text-sm font-bold text-white">UG Legon Tennis Smash - Figma Kit & Prototype</span>
+          <span class="text-xs px-2 py-0.5 rounded bg-ug-gold/10 text-ug-gold font-mono font-medium border border-ug-gold/30">UG Colors v3.0</span>
+        </div>
+        <p class="text-[11px] text-slate-400">University of Ghana Inter-Hall Championship UI/UX</p>
+      </div>
+    </div>
+
+    <!-- Central Viewport & Screen Mode Switcher -->
+    <div class="hidden md:flex items-center bg-slate-950 p-1 rounded-xl border border-ug-gold/20 text-xs">
+      <!-- Device Viewport Toggle -->
+      <button id="view-mobile-btn" onclick="setViewport('mobile')" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg text-white bg-ug-blue transition font-medium border border-ug-gold/30">
+        <i class="fa-solid fa-mobile-screen"></i>
+        <span>iPhone 15 Pro (390px)</span>
+      </button>
+      <button id="view-desktop-btn" onclick="setViewport('desktop')" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition font-medium">
+        <i class="fa-solid fa-desktop"></i>
+        <span>Desktop HUD (1440px)</span>
+      </button>
+      <div class="w-px h-4 bg-slate-800 mx-1"></div>
+      <!-- Design Tokens / Spec View Switcher -->
+      <button id="view-ds-btn" onclick="toggleDesignSystemPanel()" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg text-slate-400 hover:text-ug-gold transition font-medium">
+        <i class="fa-solid fa-swatchbook"></i>
+        <span>UG Tokens</span>
+      </button>
+    </div>
+
+    <!-- Active Users & Tools -->
+    <div class="flex items-center space-x-3">
+      <!-- Inspect Mode Toggle Button -->
+      <button id="inspect-toggle" onclick="toggleInspectMode()" class="px-3 py-1.5 rounded-lg bg-ug-blueSurface hover:bg-ug-blue border border-ug-gold/30 text-xs text-slate-200 font-semibold flex items-center space-x-2 transition">
+        <i class="fa-solid fa-code text-ug-gold"></i>
+        <span id="inspect-btn-text">Inspect Mode</span>
+      </button>
+
+      <!-- Active Collaborator Avatars -->
+      <div class="hidden sm:flex items-center -space-x-2">
+        <img class="w-7 h-7 rounded-full border-2 border-ug-gold" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="UG Student">
+        <img class="w-7 h-7 rounded-full border-2 border-ug-gold" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80" alt="UG Athlete">
+        <div class="w-7 h-7 rounded-full border-2 border-ug-gold bg-ug-gold text-ug-blueDark font-bold text-[10px] flex items-center justify-center">+4</div>
+      </div>
+
+      <!-- Export / Share -->
+      <button onclick="showToast('Exporting UG Figma Canvas Specs...')" class="bg-ug-gold text-ug-blueDark hover:bg-ug-goldHover px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-neon-gold flex items-center space-x-1">
+        <i class="fa-solid fa-share-nodes"></i>
+        <span class="hidden sm:inline">Export UI</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CANVAS CONTAINER -->
+  <div class="flex-1 flex overflow-hidden relative">
+
+    <!-- LEFT SIDEBAR: Figma Screen Navigator -->
+    <aside class="w-64 bg-ug-blueDark border-r border-ug-gold/20 flex flex-col z-20 shrink-0 hidden lg:flex">
+      <div class="p-3 border-b border-ug-gold/20 text-xs font-bold text-ug-gold uppercase tracking-wider flex items-center justify-between">
+        <span>Legon Game Frames</span>
+        <i class="fa-solid fa-layer-group text-slate-500"></i>
+      </div>
+      
+      <div class="flex-1 overflow-y-auto p-2 space-y-1">
+        <!-- Frame Nav Buttons -->
+        <button onclick="navigateTo('menu')" id="nav-menu" class="w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold flex items-center space-x-3 bg-ug-gold/10 text-ug-gold border border-ug-gold/30 transition">
+          <i class="fa-solid fa-house w-4"></i>
+          <span>1.0 UG Match Lobby</span>
+        </button>
+
+        <button onclick="navigateTo('hud')" id="nav-hud" class="w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold flex items-center space-x-3 text-slate-400 hover:bg-ug-blueSurface hover:text-white transition">
+          <i class="fa-solid fa-gamepad w-4"></i>
+          <span>2.0 Legon Live Court HUD</span>
+        </button>
+
+        <button onclick="navigateTo('locker')" id="nav-locker" class="w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold flex items-center space-x-3 text-slate-400 hover:bg-ug-blueSurface hover:text-white transition">
+          <i class="fa-solid fa-shirt w-4"></i>
+          <span>3.0 Locker & Gear Customizer</span>
+        </button>
+
+        <button onclick="navigateTo('leaderboard')" id="nav-leaderboard" class="w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold flex items-center space-x-3 text-slate-400 hover:bg-ug-blueSurface hover:text-white transition">
+          <i class="fa-solid fa-trophy w-4"></i>
+          <span>4.0 Inter-Hall Leaderboard</span>
+        </button>
+
+        <button onclick="navigateTo('victory')" id="nav-victory" class="w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold flex items-center space-x-3 text-slate-400 hover:bg-ug-blueSurface hover:text-white transition">
+          <i class="fa-solid fa-award w-4"></i>
+          <span>5.0 Victory & Medals</span>
+        </button>
+      </div>
+
+      <!-- Quick Prototype Controls -->
+      <div class="p-3 bg-slate-950 border-t border-ug-gold/20 text-xs space-y-2">
+        <div class="text-ug-gold text-[11px] font-bold uppercase">Legon Court Surface</div>
+        <div class="flex items-center justify-between text-slate-300 text-xs">
+          <span>Court Color:</span>
+          <select id="court-type" onchange="changeCourtSurface(this.value)" class="bg-ug-blueSurface text-ug-gold text-xs rounded border border-ug-gold/30 p-1">
+            <option value="ugblue">UG Midnight Blue</option>
+            <option value="uggold">UG Camel Gold</option>
+            <option value="grass">Legon Botanical Green</option>
+          </select>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER CANVAS: FIGMA WORKSPACE -->
+    <main id="canvas-wrapper" class="flex-1 figma-grid bg-slate-950 p-4 md:p-8 overflow-auto flex items-center justify-center relative">
+
+      <!-- FIGMA VIEWPORT CONTAINER (Sizing changed by JS) -->
+      <div id="viewport-frame" class="transition-all duration-500 ease-in-out relative flex flex-col shadow-2xl rounded-3xl overflow-hidden border-4 border-ug-gold/40 bg-ug-blueDark max-w-full">
+        
+        <!-- FRAME TITLE BAR (Figma Style Header Tag) -->
+        <div class="bg-ug-blueDark border-b border-ug-gold/20 px-4 py-2 flex items-center justify-between text-xs text-slate-400 shrink-0">
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-ug-gold"></span>
+            <span id="frame-label-name" class="font-mono font-semibold text-white">iPhone 15 Pro - UG Match Lobby (390 x 844)</span>
+          </div>
+          <div class="flex items-center space-x-3 text-[11px]">
+            <span class="text-ug-gold font-bold">60 FPS</span>
+            <span class="bg-ug-blueSurface px-2 py-0.5 rounded text-ug-gold font-mono border border-ug-gold/20">100% Zoom</span>
+          </div>
+        </div>
+
+        <!-- APP CONTENT AREA -->
+        <div class="flex-1 relative overflow-hidden flex flex-col bg-slate-950 text-white min-h-[700px]">
+
+          <!-- ========================================== -->
+          <!-- SCREEN 1: MAIN LOBBY & MENU (UG THEMED)    -->
+          <!-- ========================================== -->
+          <div id="screen-menu" class="absolute inset-0 flex flex-col justify-between p-5 bg-gradient-to-b from-ug-blue via-ug-blueDark to-slate-950 overflow-y-auto">
+            <!-- Top Status & University Bar -->
+            <div class="flex items-center justify-between">
+              <!-- Player Rank Profile (UG Legon Student) -->
+              <div class="flex items-center space-x-3">
+                <div class="relative">
+                  <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" class="w-12 h-12 rounded-2xl border-2 border-ug-gold object-cover shadow-neon-gold" alt="Legon Player">
+                  <span class="absolute -bottom-1 -right-1 bg-ug-gold text-ug-blueDark font-black text-[9px] px-1.5 py-0.5 rounded-full border border-white">UG</span>
+                </div>
+                <div>
+                  <h3 class="font-extrabold text-sm text-white flex items-center space-x-1">
+                    <span>Kwame "Ace" Mensah</span>
+                    <i class="fa-solid fa-circle-check text-ug-gold text-xs"></i>
+                  </h3>
+                  <div class="flex items-center space-x-2 text-xs text-ug-gold font-medium">
+                    <i class="fa-solid fa-shield-halved text-ug-gold"></i>
+                    <span>Commonwealth Hall (Vandals)</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- UG Points & Tokens -->
+              <div class="flex items-center space-x-2">
+                <div class="bg-ug-blueDark/90 border border-ug-gold/40 rounded-xl px-2.5 py-1 flex items-center space-x-1.5 text-xs font-mono">
+                  <i class="fa-solid fa-coins text-ug-gold"></i>
+                  <span class="font-bold text-white">35,400</span>
+                </div>
+                <div class="bg-ug-blueDark/90 border border-ug-gold/40 rounded-xl px-2.5 py-1 flex items-center space-x-1.5 text-xs font-mono">
+                  <i class="fa-solid fa-award text-ug-gold"></i>
+                  <span class="font-bold text-white">1,250</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Central Hero Banner: UG Inter-Hall Tournament -->
+            <div class="my-auto py-4 space-y-4">
+              <div class="relative rounded-3xl overflow-hidden border border-ug-gold/40 p-6 glass-panel bg-gradient-to-br from-ug-blue/90 to-ug-blueDark/90 shadow-2xl">
+                <div class="absolute -right-6 -top-6 w-32 h-32 bg-ug-gold/15 rounded-full blur-2xl"></div>
+                
+                <div class="flex items-center space-x-2 mb-2">
+                  <span class="bg-ug-gold text-ug-blueDark text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow-neon-gold">LEGON INTER-HALL 2026</span>
+                  <span class="text-[10px] text-ug-gold font-mono font-bold">INTEGRI PROCEDAM</span>
+                </div>
+
+                <h1 class="text-3xl font-black text-white italic tracking-tight uppercase leading-none">LEGON CHAMPIONSHIP <br><span class="text-ug-gold">FINALS</span></h1>
+                <p class="text-xs text-slate-300 mt-2 max-w-[260px]">Represent Commonwealth, Volta, Legon, or Akuafo Hall in the ultimate UG tennis showdown!</p>
+
+                <div class="mt-4 flex items-center space-x-4 text-xs font-mono">
+                  <div>
+                    <span class="text-slate-400 block text-[10px]">MATCH TIME</span>
+                    <span class="text-ug-gold font-bold">Today, 4:00 PM</span>
+                  </div>
+                  <div class="w-px h-6 bg-ug-gold/30"></div>
+                  <div>
+                    <span class="text-slate-400 block text-[10px]">HALL TROPHY</span>
+                    <span class="text-ug-gold font-bold">50,000 UG Points</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Primary Play Buttons -->
+              <div class="grid grid-cols-2 gap-3">
+                <button onclick="navigateTo('hud')" class="col-span-2 bg-ug-gold hover:bg-ug-goldHover text-ug-blueDark font-black text-lg py-4 rounded-2xl shadow-neon-gold uppercase tracking-wider transition transform active:scale-95 flex items-center justify-center space-x-2 border border-yellow-200">
+                  <i class="fa-solid fa-play"></i>
+                  <span>PLAY INTER-HALL MATCH</span>
+                </button>
+
+                <button onclick="navigateTo('hud')" class="bg-ug-blueDark border border-ug-gold/30 hover:border-ug-gold p-3 rounded-2xl flex flex-col items-center justify-center text-center transition">
+                  <i class="fa-solid fa-bolt text-ug-gold text-xl mb-1"></i>
+                  <span class="text-xs font-bold text-white">Legon Rally</span>
+                  <span class="text-[10px] text-slate-400">Quick Practice</span>
+                </button>
+
+                <button onclick="navigateTo('locker')" class="bg-ug-blueDark border border-ug-gold/30 hover:border-ug-gold p-3 rounded-2xl flex flex-col items-center justify-center text-center transition">
+                  <i class="fa-solid fa-shirt text-ug-gold text-xl mb-1"></i>
+                  <span class="text-xs font-bold text-white">UG Gear Locker</span>
+                  <span class="text-[10px] text-slate-400">Custom Kits</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Bottom Navigation Bar -->
+            <div class="bg-ug-blueDark/90 border border-ug-gold/30 rounded-2xl p-2 flex justify-around items-center glass-panel">
+              <button class="flex flex-col items-center text-ug-gold">
+                <i class="fa-solid fa-house text-lg"></i>
+                <span class="text-[10px] font-semibold mt-0.5">Lobby</span>
+              </button>
+              <button onclick="navigateTo('hud')" class="flex flex-col items-center text-slate-400 hover:text-white">
+                <i class="fa-solid fa-table-tennis-paddle-ball text-lg"></i>
+                <span class="text-[10px] font-semibold mt-0.5">Court</span>
+              </button>
+              <button onclick="navigateTo('leaderboard')" class="flex flex-col items-center text-slate-400 hover:text-white">
+                <i class="fa-solid fa-trophy text-lg"></i>
+                <span class="text-[10px] font-semibold mt-0.5">Inter-Hall</span>
+              </button>
+              <button onclick="navigateTo('locker')" class="flex flex-col items-center text-slate-400 hover:text-white">
+                <i class="fa-solid fa-shirt text-lg"></i>
+                <span class="text-[10px] font-semibold mt-0.5">Gear</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- ========================================== -->
+          <!-- SCREEN 2: IN-GAME LIVE COURT HUD           -->
+          <!-- ========================================== -->
+          <div id="screen-hud" class="absolute inset-0 flex flex-col justify-between hidden bg-slate-950 overflow-hidden">
+            
+            <!-- UG Tennis Canvas Surface -->
+            <div class="absolute inset-0 z-0 bg-slate-950 flex items-center justify-center">
+              <canvas id="tennis-canvas" class="w-full h-full object-cover"></canvas>
+            </div>
+
+            <!-- TOP HUD OVERLAY: Scoreboard & Pause -->
+            <div class="relative z-10 p-4 flex items-start justify-between">
+              <!-- Live Scoreboard -->
+              <div class="glass-panel p-3 rounded-2xl border border-ug-gold/40 shadow-2xl flex items-center space-x-4">
+                <div class="space-y-1">
+                  <!-- Player 1 Score -->
+                  <div class="flex items-center justify-between space-x-3 text-xs">
+                    <span class="font-bold text-white flex items-center space-x-1.5">
+                      <span class="w-2 h-2 rounded-full bg-ug-gold"></span>
+                      <span>VANDALS (YOU)</span>
+                    </span>
+                    <span class="font-mono text-ug-gold font-bold text-sm bg-ug-blueDark px-2 py-0.5 rounded border border-ug-gold/20">40</span>
+                  </div>
+                  <!-- Player 2 Score -->
+                  <div class="flex items-center justify-between space-x-3 text-xs">
+                    <span class="font-bold text-slate-300 flex items-center space-x-1.5">
+                      <span class="w-2 h-2 rounded-full bg-slate-600"></span>
+                      <span>AKUAFO HALL</span>
+                    </span>
+                    <span class="font-mono text-slate-300 font-bold text-sm bg-ug-blueDark px-2 py-0.5 rounded">30</span>
+                  </div>
+                </div>
+
+                <div class="w-px h-8 bg-ug-gold/30"></div>
+
+                <!-- Match Sets/Games -->
+                <div class="text-center font-mono">
+                  <div class="text-[10px] text-slate-400 font-sans uppercase">SET 3</div>
+                  <div class="text-sm font-black text-ug-gold">5 - 4</div>
+                </div>
+              </div>
+
+              <!-- Pause Button & Telemetry Stats -->
+              <div class="flex items-center space-x-2">
+                <div class="hidden sm:flex bg-ug-blueDark/90 px-3 py-1.5 rounded-xl border border-ug-gold/30 text-xs font-mono text-ug-gold">
+                  <span>BALL SPEED: </span>
+                  <span id="ball-speed-val" class="font-bold ml-1">128 MPH</span>
+                </div>
+                <button onclick="navigateTo('victory')" class="w-10 h-10 rounded-2xl glass-panel border border-ug-gold/40 flex items-center justify-center text-white hover:border-ug-gold transition">
+                  <i class="fa-solid fa-flag-checkered text-ug-gold"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- CENTRAL INTERACTIVE SIMULATOR CONTROLS OVERLAY -->
+            <div class="relative z-10 my-auto text-center pointer-events-none">
+              <div class="inline-block glass-panel px-4 py-2 rounded-full border border-ug-gold/40 text-xs font-mono text-ug-gold mb-2">
+                <i class="fa-solid fa-hand-pointer mr-1"></i> CLICK LEGON COURT CANVAS TO SERVE / SMASH
+              </div>
+            </div>
+
+            <!-- BOTTOM HUD OVERLAY: Power Meters & Skill Cards -->
+            <div class="relative z-10 p-4 space-y-3">
+              <!-- Stamina & Power Bar -->
+              <div class="space-y-1">
+                <div class="flex justify-between text-[11px] font-bold">
+                  <span class="text-slate-200">LEGON POWER SMASH</span>
+                  <span id="power-percent" class="text-ug-gold font-mono">90%</span>
+                </div>
+                <div class="w-full h-2.5 bg-ug-blueDark rounded-full overflow-hidden p-0.5 border border-ug-gold/30">
+                  <div id="power-bar-fill" class="h-full bg-gradient-to-r from-ug-gold to-yellow-200 rounded-full transition-all duration-300" style="width: 90%;"></div>
+                </div>
+              </div>
+
+              <!-- Skill Cooldown Cards -->
+              <div class="grid grid-cols-4 gap-2">
+                <button onclick="triggerSkill('Topspin')" class="glass-panel p-2.5 rounded-2xl border border-ug-gold/30 hover:border-ug-gold flex flex-col items-center justify-center text-center transition group active:scale-95">
+                  <i class="fa-solid fa-arrows-spin text-ug-gold text-lg mb-1 group-hover:scale-110 transition"></i>
+                  <span class="text-[10px] font-bold text-white">Topspin</span>
+                </button>
+
+                <button onclick="triggerSkill('Slice')" class="glass-panel p-2.5 rounded-2xl border border-ug-gold/30 hover:border-ug-gold flex flex-col items-center justify-center text-center transition group active:scale-95">
+                  <i class="fa-solid fa-wind text-ug-gold text-lg mb-1 group-hover:scale-110 transition"></i>
+                  <span class="text-[10px] font-bold text-white">Slice</span>
+                </button>
+
+                <button onclick="triggerSkill('Vandal Serve')" class="glass-panel p-2.5 rounded-2xl border border-ug-gold/30 hover:border-ug-gold flex flex-col items-center justify-center text-center transition group active:scale-95">
+                  <i class="fa-solid fa-bolt text-ug-gold text-lg mb-1 group-hover:scale-110 transition"></i>
+                  <span class="text-[10px] font-bold text-white">Vandal Ace</span>
+                </button>
+
+                <button onclick="triggerSkill('LEGON SMASH')" class="bg-gradient-to-b from-ug-gold to-yellow-600 p-2.5 rounded-2xl shadow-neon-gold flex flex-col items-center justify-center text-center transition transform active:scale-95 text-ug-blueDark">
+                  <i class="fa-solid fa-fire text-ug-blueDark text-lg mb-1 animate-bounce"></i>
+                  <span class="text-[10px] font-black uppercase">Smash</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========================================== -->
+          <!-- SCREEN 3: LEGON LOCKER & GEAR CUSTOMIZER   -->
+          <!-- ========================================== -->
+          <div id="screen-locker" class="absolute inset-0 flex flex-col justify-between p-5 hidden bg-gradient-to-b from-slate-950 via-ug-blue to-slate-950 overflow-y-auto">
+            <!-- Header -->
+            <div class="flex items-center justify-between">
+              <button onclick="navigateTo('menu')" class="w-10 h-10 rounded-xl bg-ug-blueDark border border-ug-gold/30 text-slate-300 flex items-center justify-center hover:text-white">
+                <i class="fa-solid fa-chevron-left"></i>
+              </button>
+              <h2 class="font-extrabold text-lg text-white">LEGON GEAR CUSTOMIZER</h2>
+              <div class="w-10"></div>
+            </div>
+
+            <!-- Dynamic Gear Preview Box -->
+            <div class="my-4 p-6 glass-panel rounded-3xl border border-ug-gold/40 text-center relative overflow-hidden flex flex-col items-center justify-center">
+              <div class="absolute top-3 left-3 bg-ug-gold text-ug-blueDark text-[10px] font-black px-2 py-0.5 rounded-full uppercase">UG OFFICIAL EDITION</div>
+              
+              <!-- Preview Icon Graphic -->
+              <div id="customizer-preview-ball" class="w-24 h-24 rounded-full bg-ug-gold shadow-neon-gold flex items-center justify-center my-4 transition-all duration-300 transform hover:scale-110 cursor-pointer border-2 border-white">
+                <i id="preview-icon" class="fa-solid fa-table-tennis-paddle-ball text-ug-blueDark text-4xl"></i>
+              </div>
+
+              <h3 id="gear-name" class="font-black text-xl text-white">UG CAMEL GOLD BALL</h3>
+              <p id="gear-desc" class="text-xs text-slate-300 mt-1">+20% Speed Multiplier on Legon Hardcourts</p>
+
+              <!-- Dynamic Gear Stats -->
+              <div class="w-full mt-6 space-y-2 text-xs">
+                <div class="flex justify-between text-slate-300">
+                  <span>SERVE POWER</span>
+                  <span id="stat-power" class="font-mono text-ug-gold font-bold">95 / 100</span>
+                </div>
+                <div class="w-full bg-ug-blueDark h-2 rounded-full overflow-hidden border border-ug-gold/20">
+                  <div id="stat-power-bar" class="bg-ug-gold h-full transition-all duration-500" style="width: 95%;"></div>
+                </div>
+
+                <div class="flex justify-between text-slate-300">
+                  <span>SPIN CONTROL</span>
+                  <span id="stat-spin" class="font-mono text-ug-gold font-bold">90 / 100</span>
+                </div>
+                <div class="w-full bg-ug-blueDark h-2 rounded-full overflow-hidden border border-ug-gold/20">
+                  <div id="stat-spin-bar" class="bg-ug-goldLight h-full transition-all duration-500" style="width: 90%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Customization Selection Tabs -->
+            <div class="space-y-3">
+              <span class="text-xs font-bold text-ug-gold uppercase tracking-wider block">Select Ball Aura Theme</span>
+              <div class="grid grid-cols-4 gap-2">
+                <button onclick="updateGear('Camel Gold', '#D4AF37', 95, 90)" class="p-3 rounded-2xl bg-ug-blueDark border-2 border-ug-gold flex flex-col items-center">
+                  <div class="w-6 h-6 rounded-full bg-ug-gold mb-1"></div>
+                  <span class="text-[10px] font-bold text-white">UG Gold</span>
+                </button>
+                <button onclick="updateGear('Vandal Indigo', '#002147', 90, 96)" class="p-3 rounded-2xl bg-ug-blueDark border border-ug-gold/30 hover:border-ug-gold flex flex-col items-center">
+                  <div class="w-6 h-6 rounded-full bg-ug-blue mb-1 border border-ug-gold"></div>
+                  <span class="text-[10px] font-bold text-white">Indigo</span>
+                </button>
+                <button onclick="updateGear('Volta Magenta', '#E0115F', 88, 92)" class="p-3 rounded-2xl bg-ug-blueDark border border-ug-gold/30 hover:border-ug-gold flex flex-col items-center">
+                  <div class="w-6 h-6 rounded-full bg-ug-accent mb-1"></div>
+                  <span class="text-[10px] font-bold text-white">Volta</span>
+                </button>
+                <button onclick="updateGear('Legon Botanical', '#10B981', 92, 85)" class="p-3 rounded-2xl bg-ug-blueDark border border-ug-gold/30 hover:border-ug-gold flex flex-col items-center">
+                  <div class="w-6 h-6 rounded-full bg-emerald-500 mb-1"></div>
+                  <span class="text-[10px] font-bold text-white">Botanical</span>
+                </button>
+              </div>
+            </div>
+
+            <button onclick="navigateTo('menu')" class="mt-4 w-full bg-ug-gold text-ug-blueDark font-black py-3.5 rounded-2xl shadow-neon-gold uppercase tracking-wider">
+              EQUIP SELECTION
+            </button>
+          </div>
+
+          <!-- ========================================== -->
+          <!-- SCREEN 4: UG INTER-HALL LEADERBOARD        -->
+          <!-- ========================================== -->
+          <div id="screen-leaderboard" class="absolute inset-0 flex flex-col justify-between p-5 hidden bg-gradient-to-b from-ug-blue via-ug-blueDark to-slate-950 overflow-y-auto">
+            <!-- Header -->
+            <div class="flex items-center justify-between">
+              <button onclick="navigateTo('menu')" class="w-10 h-10 rounded-xl bg-ug-blueDark border border-ug-gold/30 text-slate-300 flex items-center justify-center hover:text-white">
+                <i class="fa-solid fa-chevron-left"></i>
+              </button>
+              <h2 class="font-extrabold text-lg text-white">UG INTER-HALL STANDINGS</h2>
+              <div class="w-10"></div>
+            </div>
+
+            <div class="my-3 space-y-2">
+              <!-- Hall 1: Commonwealth -->
+              <div class="p-3 glass-panel rounded-2xl border border-ug-gold flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <span class="w-6 font-mono font-black text-ug-gold text-sm">#1</span>
+                  <div>
+                    <h4 class="font-bold text-xs text-white">Commonwealth Hall (Vandals)</h4>
+                    <span class="text-[10px] text-slate-400">1,420 Matches Won</span>
+                  </div>
+                </div>
+                <span class="font-mono font-bold text-ug-gold text-xs">28,500 pts</span>
+              </div>
+
+              <!-- Hall 2: Volta Hall -->
+              <div class="p-3 glass-panel rounded-2xl border border-ug-gold/30 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <span class="w-6 font-mono font-bold text-slate-300 text-sm">#2</span>
+                  <div>
+                    <h4 class="font-bold text-xs text-white">Volta Hall (Ladies)</h4>
+                    <span class="text-[10px] text-slate-400">1,310 Matches Won</span>
+                  </div>
+                </div>
+                <span class="font-mono font-bold text-ug-gold text-xs">26,100 pts</span>
+              </div>
+
+              <!-- Hall 3: Akuafo Hall -->
+              <div class="p-3 glass-panel rounded-2xl border border-ug-gold/30 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <span class="w-6 font-mono font-bold text-amber-600 text-sm">#3</span>
+                  <div>
+                    <h4 class="font-bold text-xs text-white">Akuafo Hall (Farmers)</h4>
+                    <span class="text-[10px] text-slate-400">1,180 Matches Won</span>
+                  </div>
+                </div>
+                <span class="font-mono font-bold text-ug-gold text-xs">23,800 pts</span>
+              </div>
+
+              <!-- Hall 4: Legon Hall -->
+              <div class="p-3 glass-panel rounded-2xl border border-ug-gold/20 flex items-center justify-between opacity-80">
+                <div class="flex items-center space-x-3">
+                  <span class="w-6 font-mono font-bold text-slate-400 text-sm">#4</span>
+                  <div>
+                    <h4 class="font-bold text-xs text-white">Legon Hall (Premier)</h4>
+                    <span class="text-[10px] text-slate-400">950 Matches Won</span>
+                  </div>
+                </div>
+                <span class="font-mono font-bold text-ug-gold text-xs">19,400 pts</span>
+              </div>
+            </div>
+
+            <button onclick="navigateTo('menu')" class="w-full bg-ug-gold text-ug-blueDark font-black py-3.5 rounded-2xl shadow-neon-gold uppercase tracking-wider">
+              RETURN TO LOBBY
+            </button>
+          </div>
+
+          <!-- ========================================== -->
+          <!-- SCREEN 5: VICTORY & MATCH RESULTS MODAL    -->
+          <!-- ========================================== -->
+          <div id="screen-victory" class="absolute inset-0 flex flex-col justify-between p-6 hidden bg-gradient-to-b from-ug-blue via-ug-blueDark to-slate-950 text-center overflow-y-auto">
+            <div class="my-auto space-y-6">
+              <!-- Trophy Badge -->
+              <div class="inline-flex relative">
+                <div class="w-24 h-24 rounded-3xl bg-ug-gold/20 border-2 border-ug-gold flex items-center justify-center text-ug-gold text-5xl shadow-neon-gold animate-bounce">
+                  <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="absolute -top-2 -right-2 bg-ug-gold text-ug-blueDark font-black text-xs px-2 py-0.5 rounded-full border border-white">+50 UG</div>
+              </div>
+
+              <div>
+                <h1 class="text-4xl font-black text-white italic tracking-tight uppercase">VICTORY LEGON!</h1>
+                <p class="text-xs text-ug-gold font-semibold mt-1">UG INTER-HALL CHAMPION 2026</p>
+              </div>
+
+              <!-- Rewards Breakdown Card -->
+              <div class="glass-panel p-4 rounded-2xl border border-ug-gold/40 space-y-3 max-w-sm mx-auto">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-300">Legon XP Earned</span>
+                  <span class="font-mono text-ug-gold font-bold">+2,500 XP</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-300">UG Points Reward</span>
+                  <span class="font-mono text-ug-gold font-bold">+1,000 Points</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-300">Aces Placed</span>
+                  <span class="font-mono text-white font-bold">12 Aces</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <button onclick="navigateTo('hud')" class="w-full bg-ug-gold text-ug-blueDark font-black py-4 rounded-2xl shadow-neon-gold uppercase tracking-wider">
+                PLAY NEXT MATCH
+              </button>
+              <button onclick="navigateTo('menu')" class="w-full bg-ug-blueDark border border-ug-gold/30 text-slate-300 font-bold py-3 rounded-2xl hover:text-white">
+                MAIN LOBBY
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT SIDEBAR: Figma Design Tokens & Component Specs -->
+    <aside id="ds-panel" class="w-80 bg-ug-blueDark border-l border-ug-gold/20 flex flex-col z-20 shrink-0 hidden xl:flex overflow-y-auto p-4 space-y-6">
+      
+      <!-- Panel Title -->
+      <div class="flex items-center justify-between pb-3 border-b border-ug-gold/20">
+        <h3 class="font-bold text-xs uppercase tracking-wider text-ug-gold">UG Design System Tokens</h3>
+        <span class="text-[10px] bg-ug-blueSurface text-ug-gold font-mono px-2 py-0.5 rounded border border-ug-gold/20">UG Specs</span>
+      </div>
+
+      <!-- Color Palette Tokens -->
+      <div class="space-y-3">
+        <h4 class="text-xs font-bold text-white">1. UG Color Palette</h4>
+        <div class="space-y-2">
+          
+          <div onclick="copyToClipboard('#002147')" class="p-2 bg-slate-950 rounded-xl border border-ug-gold/20 flex items-center justify-between cursor-pointer hover:border-ug-gold transition">
+            <div class="flex items-center space-x-2.5">
+              <div class="w-6 h-6 rounded-lg bg-ug-blue border border-ug-gold/40"></div>
+              <div>
+                <div class="text-xs font-bold text-white">UG Midnight Blue</div>
+                <div class="text-[10px] font-mono text-slate-400">#002147 (Primary Surface)</div>
+              </div>
+            </div>
+            <i class="fa-regular fa-copy text-xs text-slate-500"></i>
+          </div>
+
+          <div onclick="copyToClipboard('#D4AF37')" class="p-2 bg-slate-950 rounded-xl border border-ug-gold/20 flex items-center justify-between cursor-pointer hover:border-ug-gold transition">
+            <div class="flex items-center space-x-2.5">
+              <div class="w-6 h-6 rounded-lg bg-ug-gold"></div>
+              <div>
+                <div class="text-xs font-bold text-white">UG Camel Gold</div>
+                <div class="text-[10px] font-mono text-slate-400">#D4AF37 (Accent)</div>
+              </div>
+            </div>
+            <i class="fa-regular fa-copy text-xs text-slate-500"></i>
+          </div>
+
+          <div onclick="copyToClipboard('#00122A')" class="p-2 bg-slate-950 rounded-xl border border-ug-gold/20 flex items-center justify-between cursor-pointer hover:border-ug-gold transition">
+            <div class="flex items-center space-x-2.5">
+              <div class="w-6 h-6 rounded-lg bg-ug-blueDark border border-slate-700"></div>
+              <div>
+                <div class="text-xs font-bold text-white">UG Blue Dark</div>
+                <div class="text-[10px] font-mono text-slate-400">#00122A (Background)</div>
+              </div>
+            </div>
+            <i class="fa-regular fa-copy text-xs text-slate-500"></i>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Typography Tokens -->
+      <div class="space-y-3">
+        <h4 class="text-xs font-bold text-white">2. Typography Specs</h4>
+        <div class="p-3 bg-slate-950 rounded-xl border border-ug-gold/20 space-y-2 text-xs">
+          <div>
+            <span class="text-slate-500 text-[10px] block">HEADINGS</span>
+            <span class="font-black italic text-sm text-white">Inter 900 Italic</span>
+          </div>
+          <div class="w-full h-px bg-ug-gold/20"></div>
+          <div>
+            <span class="text-slate-500 text-[10px] block">MONOSPACE SCORE</span>
+            <span class="font-mono font-bold text-ug-gold">JetBrains Mono</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Component State Specs -->
+      <div class="space-y-3">
+        <h4 class="text-xs font-bold text-white">3. Button Components</h4>
+        <div class="space-y-2">
+          <div class="p-2.5 bg-ug-gold text-ug-blueDark font-black text-center text-xs rounded-xl shadow-neon-gold">
+            Primary UG Gold Button
+          </div>
+          <div class="p-2.5 bg-ug-blueDark border border-ug-gold/40 text-white font-bold text-center text-xs rounded-xl">
+            Secondary Indigo Glass
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Inspect CSS Panel (When Inspect Mode On) -->
+      <div id="inspect-panel" class="hidden p-3 bg-slate-950 rounded-2xl border border-ug-gold/40 space-y-2">
+        <div class="text-xs font-bold text-ug-gold flex items-center justify-between">
+          <span>UG CSS TOKENS</span>
+          <i class="fa-solid fa-code"></i>
+        </div>
+        <pre class="text-[10px] font-mono text-slate-300 bg-ug-blueDark p-2 rounded border border-ug-gold/20 overflow-x-auto">
+background: #002147;
+border: 1px solid #D4AF37;
+backdrop-filter: blur(16px);
+border-radius: 24px;
+box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+font-family: 'Inter', sans-serif;
+        </pre>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast" class="fixed bottom-5 right-5 bg-ug-gold text-ug-blueDark px-4 py-2.5 rounded-xl font-bold text-xs shadow-2xl opacity-0 pointer-events-none transition-all duration-300 z-50 flex items-center space-x-2 border border-white">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="toast-text">Toast message</span>
+  </div>
+
+  <!-- JS LOGIC: PHYSICS SIMULATOR & INTERACTIVE UI -->
+  <script>
+    // Current Active Viewport State
+    let currentViewport = 'mobile';
+    let currentScreen = 'menu';
+    let isInspectMode = false;
+
+    // Viewport Resizer Logic
+    function setViewport(type) {
+      currentViewport = type;
+      const frame = document.getElementById('viewport-frame');
+      const label = document.getElementById('frame-label-name');
+
+      const btnMobile = document.getElementById('view-mobile-btn');
+      const btnDesktop = document.getElementById('view-desktop-btn');
+
+      if (type === 'mobile') {
+        frame.style.width = '390px';
+        frame.style.height = '844px';
+        label.innerText = 'iPhone 15 Pro - UG Match Lobby (390 x 844)';
+
+        btnMobile.className = 'flex items-center space-x-2 px-3 py-1.5 rounded-lg text-white bg-ug-blue transition font-medium border border-ug-gold/30';
+        btnDesktop.className = 'flex items-center space-x-2 px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition font-medium';
+      } else {
+        frame.style.width = '1000px';
+        frame.style.height = '680px';
+        label.innerText = 'Desktop HUD Widescreen Frame (1440 x 900 Scaled)';
+
+        btnDesktop.className = 'flex items-center space-x-2 px-3 py-1.5 rounded-lg text-white bg-ug-blue transition font-medium border border-ug-gold/30';
+        btnMobile.className = 'flex items-center space-x-2 px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition font-medium';
+      }
+
+      // Re-trigger canvas dimensions resize
+      setTimeout(resizeCanvas, 300);
+    }
+
+    // Navigation Switcher
+    function navigateTo(screenId) {
+      currentScreen = screenId;
+      const screens = ['menu', 'hud', 'locker', 'leaderboard', 'victory'];
+      screens.forEach(s => {
+        const el = document.getElementById(`screen-${s}`);
+        if(el) el.classList.add('hidden');
+        const navBtn = document.getElementById(`nav-${s}`);
+        if(navBtn) {
+          navBtn.className = 'w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold flex items-center space-x-3 text-slate-400 hover:bg-ug-blueSurface hover:text-white transition';
+        }
+      });
+
+      const activeScreen = document.getElementById(`screen-${screenId}`);
+      if(activeScreen) activeScreen.classList.remove('hidden');
+      const activeBtn = document.getElementById(`nav-${screenId}`);
+      if(activeBtn) {
+        activeBtn.className = 'w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold flex items-center space-x-3 bg-ug-gold/10 text-ug-gold border border-ug-gold/30 transition';
+      }
+
+      if (screenId === 'hud') {
+        initCanvas();
+      }
+    }
+
+    // Toggle Design System Right Sidebar
+    function toggleDesignSystemPanel() {
+      const dsPanel = document.getElementById('ds-panel');
+      dsPanel.classList.toggle('hidden');
+    }
+
+    // Inspect Mode Toggle
+    function toggleInspectMode() {
+      isInspectMode = !isInspectMode;
+      const btnText = document.getElementById('inspect-btn-text');
+      const inspectPanel = document.getElementById('inspect-panel');
+
+      if (isInspectMode) {
+        btnText.innerText = 'Inspect Active';
+        inspectPanel.classList.remove('hidden');
+        showToast('Inspect Mode Activated: UG Tokens On');
+      } else {
+        btnText.innerText = 'Inspect Mode';
+        inspectPanel.classList.add('hidden');
+      }
+    }
+
+    // Customizer Gear Update Handler
+    function updateGear(name, colorHex, power, spin) {
+      document.getElementById('gear-name').innerText = 'UG ' + name.toUpperCase() + ' BALL';
+      document.getElementById('customizer-preview-ball').style.backgroundColor = colorHex;
+      document.getElementById('customizer-preview-ball').style.boxShadow = `0 0 25px ${colorHex}`;
+
+      document.getElementById('stat-power').innerText = `${power} / 100`;
+      document.getElementById('stat-power-bar').style.width = `${power}%`;
+
+      document.getElementById('stat-spin').innerText = `${spin} / 100`;
+      document.getElementById('stat-spin-bar').style.width = `${spin}%`;
+
+      showToast(`Equipped ${name} Aura!`);
+    }
+
+    // Skill Trigger Event
+    function triggerSkill(skillName) {
+      showToast(`Skill Activated: ${skillName}!`);
+      // Trigger canvas physics bounce force
+      if (ball) {
+        ball.vy = -14;
+        ball.vx = (Math.random() - 0.5) * 10;
+      }
+    }
+
+    // Toast Notification Helper
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastText = document.getElementById('toast-text');
+      toastText.innerText = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 2500);
+    }
+
+    // Copy Color Code to Clipboard
+    function copyToClipboard(text) {
+      const el = document.createElement('textarea');
+      el.value = text;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      showToast(`Copied ${text} to Clipboard!`);
+    }
+
+    // ==========================================
+    // 2D/3D TENNIS PHYSICS CANVAS ENGINE (UG BRANDED)
+    // ==========================================
+    let canvas, ctx;
+    let ball = { x: 0, y: 0, z: 0, vx: 3, vy: -5, vz: 0, radius: 10 };
+    let courtColor = '#002147'; // UG Blue Default Court
+    let courtLineColor = '#D4AF37'; // UG Gold Baseline
+
+    function initCanvas() {
+      canvas = document.getElementById('tennis-canvas');
+      if (!canvas) return;
+      ctx = canvas.getContext('2d');
+      resizeCanvas();
+
+      ball.x = canvas.width / 2;
+      ball.y = canvas.height - 100;
+
+      canvas.onclick = function(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+        
+        // Shoot ball towards clicked position
+        ball.vx = (clickX - ball.x) * 0.08;
+        ball.vy = (clickY - ball.y) * 0.08;
+      };
+
+      animateCanvas();
+    }
+
+    function resizeCanvas() {
+      if (!canvas) return;
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    }
+
+    function changeCourtSurface(type) {
+      if (type === 'ugblue') {
+        courtColor = '#002147';
+        courtLineColor = '#D4AF37';
+      } else if (type === 'uggold') {
+        courtColor = '#C5A059';
+        courtLineColor = '#002147';
+      } else if (type === 'grass') {
+        courtColor = '#064E3B';
+        courtLineColor = '#D4AF37';
+      }
+    }
+
+    function animateCanvas() {
+      if (currentScreen !== 'hud') return;
+
+      ctx.fillStyle = courtColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw Tennis Court Lines Perspective
+      ctx.strokeStyle = courtLineColor;
+      ctx.lineWidth = 3;
+      
+      const w = canvas.width;
+      const h = canvas.height;
+
+      // Outer Boundary
+      ctx.beginPath();
+      ctx.moveTo(w * 0.2, h * 0.2);
+      ctx.lineTo(w * 0.8, h * 0.2);
+      ctx.lineTo(w * 0.95, h * 0.9);
+      ctx.lineTo(w * 0.05, h * 0.9);
+      ctx.closePath();
+      ctx.stroke();
+
+      // Net Line
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(w * 0.12, h * 0.55);
+      ctx.lineTo(w * 0.88, h * 0.55);
+      ctx.stroke();
+
+      // Motion Physics Update
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+
+      // Wall Bounce Bounds
+      if (ball.x < 30 || ball.x > w - 30) ball.vx *= -1;
+      if (ball.y < 30 || ball.y > h - 30) ball.vy *= -1;
+
+      // Draw Trajectory Line with UG Gold Glow
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.5)';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(ball.x, ball.y);
+      ctx.lineTo(ball.x + ball.vx * 8, ball.y + ball.vy * 8);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Draw Tennis Ball
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+      ctx.fillStyle = '#D4AF37';
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = '#D4AF37';
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      requestAnimationFrame(animateCanvas);
+    }
+
+    window.onload = function() {
+      setViewport('mobile');
+    };
+    window.onresize = resizeCanvas;
+  </script>
+</body>
+</html>

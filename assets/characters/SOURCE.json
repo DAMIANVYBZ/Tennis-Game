@@ -1,0 +1,24 @@
+{
+  "provided_by": "User",
+  "notes": "The Drive files are reversed relative to the earlier attachment labels. Actual appearances were inspected: first Drive file is the male Ch42 model, second is the female Ch02 model. These files have 65-bone Mixamo rigs and no embedded animation clips. Tennis posing is implemented in avatars.mjs.",
+  "models": [
+    {
+      "character": "male",
+      "source": "first Drive link",
+      "url": "https://drive.google.com/file/d/17L8rJ2D7PYueZywKLUbfP76Tk7GFNdU2/view",
+      "fbx_bytes": 53722240,
+      "fbx_sha256": "f9efdd615b8de657d0e088577d18618ae5a35ef7178d370ec404b18c3590b0c1",
+      "runtime_file": "male.glb",
+      "runtime_bytes": 5786708
+    },
+    {
+      "character": "female",
+      "source": "second Drive link",
+      "url": "https://drive.google.com/file/d/196Ax7xVQrRfXArg_7xFprMdny4kXFAHq/view",
+      "fbx_bytes": 49776000,
+      "fbx_sha256": "8788168a32a47d9047169b1d01fc3bed1175e666319b48596011ae9cacce3c21",
+      "runtime_file": "female.glb",
+      "runtime_bytes": 5877204
+    }
+  ]
+}

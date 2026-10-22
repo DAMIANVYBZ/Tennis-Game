@@ -17,7 +17,7 @@ with sync_playwright() as p:
     page.route('http://baseline.test/**',asset)
     page.goto('http://baseline.test/')
     page.wait_for_function('!!window.__tennis',timeout=60000)
-    page.get_by_role('button',name='ENTER THE CLUB').click()
+    page.get_by_role('button',name='PLAY INTER-HALL MATCH').click()
     page.get_by_role('button',name='OPEN ASSET GALLERY').click()
     page.locator('#enterCourt').click()
     page.wait_for_function('__tennis.sound.sampleState==="ready"')
@@ -133,7 +133,7 @@ with sync_playwright() as p:
     # Win overlay and restart integrate engine, HUD, camera and controls.
     js('__tennis.match.points={you:20,ai:18};__tennis.match.state="rally";__tennis.match.score("you","WINNER")')
     assert page.locator('#overlay').is_visible()
-    assert 'Your court' in page.locator('#overlay h1').inner_text()
+    assert 'VICTORY' in page.locator('#overlay h1').inner_text()
     page.get_by_role('button',name='Play again').click();assert js('__tennis.match.points.you')==0
     page.set_viewport_size({'width':1440,'height':900});page.wait_for_timeout(150);js('__tennis.refresh()')
     page.keyboard.down('Space');advance(.6);js('__tennis.refresh()');page.screenshot(path='/workspace/tennis-aim-power.png');page.keyboard.up('Space')
