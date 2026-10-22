@@ -13,7 +13,7 @@ with sync_playwright() as p:
    if path.is_dir():path=path/'index.html'
    if not path.exists():route.fulfill(status=404,body='not found');return
    route.fulfill(body=path.read_bytes(),content_type='text/javascript' if path.suffix in ['.mjs','.js'] else mimetypes.guess_type(str(path))[0] or 'application/octet-stream')
-  page.route('http://baseline.test/**',asset);page.goto('http://baseline.test/');page.wait_for_function('window.__tennis?.characterStatus.state==="ready"',timeout=120000);return page,errors
+  page.route('http://baseline.test/**',asset);page.goto('http://baseline.test/');page.wait_for_function('window.__tennis?.characterStatus.state==="ready"',timeout=120000);page.wait_for_function('!window.tennisLoading.active',timeout=120000);return page,errors
  page,errors=open_page(browser.new_context(viewport={'width':1440,'height':900}))
  assert page.evaluate('__tennis.music.audio.paused && !__tennis.music.unlocked')
  page.locator('#menuMusic').click();page.wait_for_function('__tennis.music.state==="playing"&&__tennis.music.audio.currentTime>.15&&__tennis.music.ctx.state==="running"')

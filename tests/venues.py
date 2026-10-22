@@ -36,9 +36,9 @@ with sync_playwright() as p:
  # The first request can fail without admitting the player into an empty scene.
  page.route('**/athletic-oval.glb',lambda r:r.fulfill(status=503,body='temporary failure'))
  page.goto('http://baseline.test/?court=oval-west');page.wait_for_function('window.__tennis?.environment.state==="error"',timeout=120000)
- page.get_by_role('button',name='PLAY INTER-HALL MATCH').click();page.get_by_role('button',name='OPEN ASSET GALLERY').click()
- assert page.locator('#enterCourt').is_disabled();assert page.locator('#retryVenue').is_visible()
- page.unroute('**/athletic-oval.glb');page.locator('#retryVenue').click();ready();assert page.locator('#enterCourt').is_enabled()
+ assert page.locator('#bootLoading').is_visible();assert page.locator('#bootRetry').is_visible()
+ page.unroute('**/athletic-oval.glb');page.locator('#bootRetry').click();ready();page.wait_for_function('!window.tennisLoading.active',timeout=120000)
+ page.get_by_role('button',name='PLAY INTER-HALL MATCH').click();page.get_by_role('button',name='OPEN ASSET GALLERY').click();assert page.locator('#enterCourt').is_enabled()
  # Rapid selection cannot display an obsolete environment after its download finishes.
  page.evaluate("__tennis.environment.select('commonwealth-hard');__tennis.environment.select('stadium-west')")
  page.wait_for_function('__tennis.environment.state==="ready" && __tennis.environment.root.userData.venue==="stadium-west"',timeout=120000)

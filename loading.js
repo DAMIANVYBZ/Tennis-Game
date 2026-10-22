@@ -1,0 +1,11 @@
+// Runs before the game module so slow downloads and module failures have visible UI.
+(() => {
+ const screen=document.getElementById('bootLoading'),status=document.getElementById('bootStatus'),bar=document.getElementById('bootProgress'),percent=document.getElementById('bootPercent'),retry=document.getElementById('bootRetry');
+ const parts=new Map([['court','loading'],['players','loading'],['images','loading'],['render','loading']]);
+ const weights={court:40,players:40,images:10,render:10};let progress=0,closed=false;
+ function paint(){let value=0;for(const [part,state]of parts)if(state==='ready')value+=weights[part];progress=Math.max(progress,value);bar.style.width=progress+'%';percent.textContent=progress+'%';screen.querySelector('[role="progressbar"]').setAttribute('aria-valuenow',progress);const failed=[...parts.values()].includes('error');retry.hidden=!failed;screen.dataset.state=failed?'error':'loading';status.textContent=failed?'Something did not load. Check your connection and try again.':parts.get('players')!=='ready'?'Loading your players…':parts.get('court')!=='ready'?'Loading your court…':parts.get('images')!=='ready'?'Preparing the club…':'Getting the court ready…'}
+ window.tennisLoading={get active(){return !closed},set(part,state){if(closed)return;parts.set(part,state);paint()},fail(message){if(closed)return;parts.set('render','error');paint();if(message)status.textContent=message},complete(){if(closed)return;for(const key of parts.keys())parts.set(key,'ready');paint();status.textContent='Ready. Welcome to Legon.';closed=true;screen.setAttribute('aria-busy','false');screen.hidden=true;document.body.classList.remove('boot-loading');for(const id of ['clubShell','arena','matchHeader'])document.getElementById(id)?.removeAttribute('inert')},retry:null};
+ retry.onclick=()=>{if(window.tennisLoading.retry)window.tennisLoading.retry();else location.reload()};
+ window.addEventListener('error',event=>{if(closed)return;if(event.target?.tagName==='SCRIPT')window.tennisLoading.fail('The game could not download. Check your connection and retry.');else if(event.message)window.tennisLoading.fail(event.message.includes('WebGL')?'Enable browser hardware acceleration, then retry.':'The game could not start. Please retry.')},true);
+ paint();
+})();
