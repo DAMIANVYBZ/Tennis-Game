@@ -76,6 +76,21 @@ with sync_playwright() as p:
     assert js('__tennis.match.aim.x')<0 and js('__tennis.match.you.stamina')<1
     js('pad.buttons[9].pressed=true;__tennis.pollPad()');assert js('__tennis.match.state')=='paused'
     js('pad.connected=false;__tennis.pollPad()');assert 'DISCONNECTED' in page.locator('#gamepadStatus').inner_text()
+    # Holding the right stick keeps extending depth instead of selecting a fixed spot.
+    js('pad.connected=true;pad.buttons.forEach(b=>b.pressed=false);pad.axes=[0,0,0,-.8];__tennis.match.start();__tennis.pollPad()')
+    advance(.25,'__tennis.buildInput(1/120)');js('__tennis.refresh()')
+    first=js('__tennis.scene.getObjectByName("aim-target").position.z')
+    advance(.25,'__tennis.buildInput(1/120)');js('__tennis.refresh()')
+    assert js('__tennis.scene.getObjectByName("aim-target").position.z')<first-.2
+    js('pad.axes=[0,0,0,0];__tennis.pollPad()')
+    held=js('__tennis.match.aim.depth');advance(.15,'__tennis.buildInput(1/120)')
+    assert abs(js('__tennis.match.aim.depth')-held)<1e-8
+    js('pad.axes=[0,0,0,-1];__tennis.pollPad()');advance(1,'__tennis.buildInput(1/120)');js('__tennis.refresh()')
+    assert js('__tennis.scene.getObjectByName("aim-target").position.z')<-6.4
+    assert js('__tennis.scene.getObjectByName("aiming-arc").material.color.getHex()')==0xf4a38b
+    js('pad.axes=[0,0,0,1];__tennis.pollPad()');advance(2,'__tennis.buildInput(1/120)');js('__tennis.refresh()')
+    assert js('__tennis.scene.getObjectByName("aim-target").position.z')> -2
+    js('pad.connected=false;__tennis.pollPad();__tennis.match.start()')
     # Settings pause/resume and assistance changes.
     js('__tennis.match.start()')
     page.locator('#settingsButton').click();assert js('__tennis.match.state')=='paused'

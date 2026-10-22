@@ -32,3 +32,11 @@ m.points={you:20,ai:20};m.state='rally';m.score('you','WINNER');assert.equal(m.s
 const flight={};for(const type of ['flat','topspin','slice','lob']){m.ball={x:0,y:1,z:10};m.launch('you',{type,power:.7,over:0,aim:.6,depth:.8});flight[type]={vy:m.ball.vy,speed:Math.abs(m.ball.vz)}}
 assert.ok(flight.flat.speed>flight.topspin.speed);assert.ok(flight.lob.vy>flight.topspin.vy);assert.ok(flight.slice.speed<flight.topspin.speed);
 console.log('PASS: complete legal serve and AI return, no automatic player hit, two-axis motion, stamina, pause, manual release/reach, net/out physics, service rotation/changeovers, win-by-two and distinct shot trajectories.');
+
+// Aim range includes short balls and deliberate long/wide shots, even on serves.
+const shot={type:'topspin',power:.6,over:0,aim:1.35,depth:1.25};
+m.you.x=1.3;m.you.z=12.1;m.ball={x:0,y:1,z:10};
+let target=m.trajectory('you',shot,false).landing;assert.ok(target.x>COURT.single&&Math.abs(target.z)>COURT.baseline);
+let deep=m.trajectory('you',shot,true).landing;let short=m.trajectory('you',{...shot,depth:0},true).landing;
+assert.ok(Math.abs(deep.z)>COURT.service);assert.ok(Math.abs(short.z)<1);
+console.log('PASS: short, deep, wide, out-of-court and adjustable service-depth targets.');

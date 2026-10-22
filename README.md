@@ -29,7 +29,7 @@ On touchscreens, the left joystick moves. Hold a shot button on the right and dr
 
 Move into reach, hold a shot to prepare/charge, then release close to contact. Shots are never automatic for the human player. Overcharging, poor timing, and aggressive placement reduce accuracy. Shot types change flight time and bounce restitution. Sprint drains stamina; it recovers when resting.
 
-While preparing or serving, a curved 3D aiming guide shows the planned flight and bounce point. Move the right stick to change direction and depth. The arc uses the same ballistic planner as actual shots, assuming good timing; timing and reach can change the result. Orange indicates an unsafe planned shot.
+While preparing or serving, a curved 3D aiming guide shows the planned flight and bounce point. Hold the right stick to move the aim cursor continuously in direction and depth; centering it preserves your chosen position. Up moves deeper, down shorter. Both serves and rally shots support adjustable depth. The cursor can pass beyond the court lines for deliberate risk; orange warns of planned outs or faults. The arc uses the same ballistic planner as actual shots, assuming good timing; timing and reach can change the result. Orange indicates an unsafe planned shot.
 
 A prominent power bar follows your player and fills as you hold a shot button. Its percentage and the sidebar power meter track charge; overcharging turns the bar orange.
 
