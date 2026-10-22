@@ -41,11 +41,11 @@ First to 21, win by two. Service alternates every two points, then every point a
 
 ## Visual reference
 
-The user supplied a Cross Court Tennis 3 gameplay recording. Broad samples across the 12½-minute recording and a denser 100–112-second rally sequence informed the elevated full-court camera, compact score overlay, two-axis movement, service poses, fenced blue court, touch joystick, point camera cuts and play-to-21 flow. The models, scene, interface, code and synthesized sound are original. This is not an exact reproduction of the commercial game's assets, animation system, physics or hidden assistance rules.
+The user supplied a Cross Court Tennis 3 gameplay recording. Broad samples across the 12½-minute recording and a denser 100–112-second rally sequence informed the elevated full-court camera, compact score overlay, two-axis movement, service poses, fenced blue court, touch joystick, point camera cuts and play-to-21 flow. The models, scene, interface and code are original. Racket and shoe effects now use brief excerpts from the user-provided audio; other effects are synthesized. This is not an exact reproduction of the commercial game's assets, animation system, physics or hidden assistance rules.
 
 ## Audio
 
-Original Web Audio effects provide racket impacts, ball bounces, foot scuffs, swing noise, net contact and applause. Sound starts after interaction. Use the on-court mute button or the Settings volume slider. No recordings or third-party sound assets are used.
+Four short WAV samples cropped from the user-provided recording supply racket impacts and shoe-friction texture. Hits vary with power, and the opponent sounds more distant. Footstep scuffs follow movement; longer rubber squeaks play on sprints, braking and direction changes for both players. The original synthesized bounce, net, swing and crowd effects remain. Sound starts after interaction. Use the on-court mute button or the Settings volume slider. Samples load locally through Web Audio after interaction, with synthesized fallback if loading fails. Source times and processing are documented in `assets/audio/SOURCE.md`.
 
 ## Validation
 
@@ -59,7 +59,7 @@ Physics checks require Node only. Browser checks require Python, Playwright and 
 
 ## Deployment
 
-Stage `index.html`, `style.css`, `game.js`, `engine.mjs`, `audio.mjs`, and the entire `vendor/` folder in an asset directory. Do not deploy tests, the repository metadata or the reference video.
+Stage `index.html`, `style.css`, `game.js`, `engine.mjs`, `audio.mjs`, the four WAV files under `assets/audio/`, and the entire `vendor/` folder in an asset directory. Do not deploy tests, the repository metadata or the reference video.
 
 ```sh
 npx wrangler@4 pages deploy /path/to/assets --project-name tennis-legon --branch main

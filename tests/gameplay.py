@@ -18,6 +18,7 @@ with sync_playwright() as p:
     page.goto('http://baseline.test/')
     page.wait_for_function('!!window.__tennis',timeout=60000)
     page.get_by_role('button',name='Step onto court').click()
+    page.wait_for_function('__tennis.sound.sampleState==="ready"')
     page.wait_for_function('__tennis.renderer.info.render.triangles>10000')
     page.evaluate('window.requestAnimationFrame=()=>0')
     page.wait_for_timeout(150)
@@ -60,6 +61,7 @@ with sync_playwright() as p:
     assert js('__tennis.match.state')=='toss'
     advance(.7);assert js('__tennis.match.state')=='rally'
     assert js('__tennis.sound.events>0 && __tennis.sound.ctx.state==="running"')
+    assert js('__tennis.sound.samplePlays.hit>0 && __tennis.sound.samples.hit.length===2 && __tennis.sound.samples.shoe.length===2')
     page.keyboard.press('p');assert js('__tennis.match.state')=='paused'
     before=js('__tennis.match.time');advance(.5);assert js('__tennis.match.time')==before
     page.keyboard.press('p');assert js('__tennis.match.state')=='rally'
@@ -74,6 +76,8 @@ with sync_playwright() as p:
     advance(.15,'__tennis.buildInput(1/120)')
     assert js('__tennis.match.you.x')>before['x'] and js('__tennis.match.you.z')<before['z']
     assert js('__tennis.match.aim.x')<0 and js('__tennis.match.you.stamina')<1
+    advance(.03)
+    assert js('__tennis.sound.samplePlays.step>0 && __tennis.sound.samplePlays.slide>0')
     js('pad.buttons[9].pressed=true;__tennis.pollPad()');assert js('__tennis.match.state')=='paused'
     js('pad.connected=false;__tennis.pollPad()');assert 'DISCONNECTED' in page.locator('#gamepadStatus').inner_text()
     # Holding the right stick keeps extending depth instead of selecting a fixed spot.
