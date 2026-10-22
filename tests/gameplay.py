@@ -113,6 +113,16 @@ with sync_playwright() as p:
     page.screenshot(path='/workspace/tennis-mobile-landscape.png')
     page.set_viewport_size({'width':390,'height':844});page.wait_for_timeout(150);js('__tennis.refresh()')
     assert js('document.documentElement.scrollWidth<=innerWidth')
+    # First service fault gives a visible second serve without changing the score.
+    js('__tennis.match.start();__tennis.match.state="rally";__tennis.match.launch("you",{type:"topspin",power:.7,over:0,aim:1.2,depth:.72},true)')
+    advance(2);js('__tennis.refresh()')
+    assert js('__tennis.match.state')=='fault'
+    assert js('__tennis.match.points.you+__tennis.match.points.ai')==0
+    assert page.locator('#pointScore').inner_text()=='2nd serve'
+    assert js('__tennis.scene.getObjectByName("service-box").visible')
+    advance(1.2);js('__tennis.refresh()')
+    assert js('__tennis.match.serveAttempt')==2
+    assert '2ND SERVE' in page.locator('#phase').inner_text()
     # Win overlay and restart integrate engine, HUD, camera and controls.
     js('__tennis.match.points={you:20,ai:18};__tennis.match.state="rally";__tennis.match.score("you","WINNER")')
     assert page.locator('#overlay').is_visible()

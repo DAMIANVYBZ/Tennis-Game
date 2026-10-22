@@ -35,7 +35,7 @@ A prominent power bar follows your player and fills as you hold a shot button. I
 
 Position assistance defaults to 40% and can be reduced to zero in Settings. It makes small nearby alignment corrections only while preparing a return. It is not a measured AI/human gameplay ratio.
 
-The ball has three-dimensional position/velocity, gravity, a first-bounce landing marker, and net collision. Serves have a visible toss and must land diagonally in the service box. Let a serve bounce before returning it. First-bounce out balls and missed second bounces lose the point. In this exhibition mode a service fault loses the point; second serves, lets, standard tennis games/sets and complete professional spin physics are not implemented.
+The ball has three-dimensional position/velocity, gravity, a first-bounce landing marker, and net collision. Serves have a visible toss and must land diagonally in the service box. Let a serve bounce before returning it. First-bounce out balls and missed second bounces lose the point. The correct diagonal service box is highlighted. A first service fault gives a second serve with no score change; a double fault loses the point. Balls touching painted lines count as in. The service box is fixed at racket contact, so subsequent server movement cannot change it. Net lets, foot faults, standard tennis games/sets and complete professional spin physics are not implemented.
 
 First to 21, win by two. Service alternates every two points, then every point after 20–20. Change ends every five points; the camera follows your new end so controls remain camera-relative. Brief camera close-ups show the point winner. The opponent has difficulty-dependent movement, reaction delay, and placement estimates, and chooses among shot types.
 
@@ -51,10 +51,11 @@ Original Web Audio effects provide racket impacts, ball bounces, foot scuffs, sw
 
 ```sh
 node tests/physics.mjs
+node tests/service.mjs
 python tests/gameplay.py
 ```
 
-Physics checks require Node only. Browser checks require Python, Playwright and Chromium. They exercise legal serves, manual contact, two-axis movement, stamina, net/out scoring, service rotation/changeovers, win-by-two, distinct shot trajectories, actual WebGL rendering, gamepad mapping, mobile joystick/shot buttons, audio, pause, settings and restart. Physical controller testing and a mobile-device performance test remain separate.
+Physics checks require Node only. Browser checks require Python, Playwright and Chromium. They exercise legal serves, manual contact, two-axis movement, stamina, net/out scoring, service rotation/changeovers, win-by-two, distinct shot trajectories, 297 serve regression cases (both sides/servers, all shot types/powers, line contacts, movement after contact, second serves and double faults), actual WebGL rendering, gamepad mapping, mobile joystick/shot buttons, audio, pause, settings and restart. Physical controller testing and a mobile-device performance test remain separate.
 
 ## Deployment
 
