@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Baseline — Tennis Club</title><style>
+*{box-sizing:border-box}body{margin:0;background:#101b24;color:#f1f5ed;font:14px system-ui,sans-serif}header{height:76px;padding:0 5%;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff14}.brand{font-size:23px;font-weight:850;letter-spacing:-1px}.brand i{color:#dcf68d;font-style:normal}header span{font-size:11px;letter-spacing:2px;color:#abb9bd}.status{color:#dcf68d;letter-spacing:1px;font-size:11px}main{max-width:1280px;margin:auto;padding:28px 28px 20px}.top{display:flex;justify-content:space-between;align-items:end;margin-bottom:22px}h1{font-size:32px;letter-spacing:-1.3px;margin:5px 0}.eyebrow{font-size:10px;letter-spacing:2px;color:#dcf68d}.muted{color:#9aaeb6;font-size:12px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:20px}.arena{position:relative;border-radius:18px;overflow:hidden;background:#172c36;border:1px solid #ffffff18}canvas{width:100%;height:auto;display:block;touch-action:none;cursor:crosshair}.badge{position:absolute;left:20px;top:18px;font-size:10px;letter-spacing:2px;color:#b8d0ce}.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#0b17245c;backdrop-filter:blur(4px)}.overlay.hidden{display:none}.dialog{text-align:center;max-width:360px;padding:28px}.dialog h2{font-size:40px;letter-spacing:-2px;margin:0 0 12px}.dialog p{line-height:1.7;color:#d0dfdf}button{border:0;border-radius:9px;padding:14px 22px;font:700 13px system-ui;cursor:pointer;background:#dcf68d;color:#1d2c26}button:hover{background:#edffb4}button:focus-visible,select:focus-visible{outline:3px solid white;outline-offset:3px}.panel{border:1px solid #ffffff15;background:#17252e;border-radius:16px;padding:22px;margin-bottom:16px}.label{font-size:10px;color:#9db0b6;letter-spacing:2px;margin-bottom:20px}.player{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #ffffff0c}.player strong{font-size:34px;font-weight:500}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#dcf68d;margin-right:9px}.dot.ai{background:#f3a78a}.rally{display:flex;justify-content:space-between;padding-top:22px;color:#a5bac0;font-size:12px}.rally b{color:white}.controls p{color:#a8bbc1;font-size:12px;line-height:1.7}kbd{font:11px system-ui;padding:3px 6px;border:1px solid #587079;border-radius:4px;color:#f1f5ed}.secondary{background:#243b47;color:#d8e6e6;width:100%;margin-top:12px}select{width:100%;background:#243b47;color:white;border:1px solid #ffffff20;border-radius:6px;padding:10px;margin-top:6px}.footer{display:flex;justify-content:space-between;gap:12px;margin-top:18px;font-size:11px;color:#92a7ae}.sound{background:transparent;color:#aac0c5;padding:6px}.hint{text-align:center;padding:12px;color:#92afb7;font-size:11px;background:#142630}@media(max-width:800px){header{height:60px}header span{display:none}main{padding:20px 12px}.layout{grid-template-columns:1fr}.sidebar{display:grid;grid-template-columns:1fr 1fr;gap:12px}.panel{padding:16px;margin:0}.top .muted{display:none}h1{font-size:27px}.dialog h2{font-size:30px}.dialog{padding:15px}.dialog p{font-size:12px}.footer{font-size:10px}}
+</style></head><body><header><div class="brand">baseline<i>↗</i></div><span>THE COURT IS YOURS.</span><div class="status">● &nbsp; BROWSER TENNIS CLUB</div></header><main><div class="top"><div><div class="eyebrow">EXHIBITION / HARD COURT</div><h1>A little court time.</h1></div><div class="muted">One court. One opponent. Find your rhythm.</div></div><div class="layout"><section class="arena"><div class="badge">COURT 01 &nbsp; / &nbsp; NIGHT SESSION</div><canvas id="court" width="1000" height="720" aria-label="Tennis court. Move with arrow keys or pointer. Space to serve."></canvas><div class="overlay" id="overlay"><div class="dialog"><div class="eyebrow">WELCOME TO BASELINE</div><h2 id="title">Meet your match.</h2><p id="message">Move your player, find the angle, and keep the rally alive. First to 7 points wins.</p><button id="play">Step onto court ↗</button></div></div><div class="hint" id="hint">MOVE YOUR MOUSE OR FINGER TO POSITION YOUR PLAYER</div></section><aside class="sidebar"><div class="panel"><div class="label">LIVE SCORE <span style="float:right;color:#dcf68d" id="phase">READY</span></div><div class="player"><span><i class="dot"></i>You</span><strong id="you">0</strong></div><div class="player"><span><i class="dot ai"></i>Club AI</span><strong id="ai">0</strong></div><div class="rally"><span>Current rally</span><b id="rally">0</b></div><div class="rally"><span>Best rally</span><b id="best">0</b></div></div><div class="panel controls"><div class="label">YOUR GAME PLAN</div><p><kbd>←</kbd> <kbd>→</kbd> or move your pointer<br>Position your player. Swings are automatic.</p><p><kbd>Space</kbd> or tap the court to serve<br><kbd>P</kbd> pause / resume</p><p>🎮 Stick / D-pad to move<br>A to serve · Start to pause</p><p id="gamepadStatus" role="status">Connect a gamepad and press a button.</p><label class="muted" for="difficulty">Opponent</label><select id="difficulty"><option value="easy">Casual</option><option value="normal" selected>Club player</option><option value="hard">Challenger</option></select><button class="secondary" id="pause">Pause match</button></div></aside></div><div class="footer"><span>BUILT FOR PLAY. &nbsp; NO DOWNLOADS. NO SIGN-UPS.</span><button class="sound" id="sound" aria-pressed="false">Sound off ♫</button></div></main><script>
+'use strict';
+const canvas=document.getElementById('court'),ctx=canvas.getContext('2d'),$=id=>document.getElementById(id);
+let state='menu',you=0,ai=0,rally=0,best=0,px=0,ax=0,target=0,keys={},last=0,wait=0,sound=false,audio,trail=[],difficulty='normal',particles=[];
+let ball={x:0,z:.9,vx:0,vz:0};
+let animationTime=0;
+const athletes={you:{step:0,motion:0,swing:0,side:1},ai:{step:0,motion:0,swing:0,side:1}};
+function animateAthlete(a,delta,dt){a.motion+=(Math.min(1,Math.abs(delta)/Math.max(dt,.001)*1.7)-a.motion)*Math.min(1,dt*12);a.step+=dt*(4+a.motion*14);a.swing=Math.max(0,a.swing-dt*3.2)}
+let gamepadButtons={},activeGamepad=null;
+function pollGamepad(dt){
+ const pads=navigator.getGamepads?navigator.getGamepads():[];
+ const pad=Array.from(pads).find(p=>p&&p.connected&&p.index===activeGamepad)||Array.from(pads).find(p=>p&&p.connected);
+ if(!pad){if(activeGamepad!==null){activeGamepad=null;gamepadButtons={};$('gamepadStatus').textContent='Controller disconnected. Mouse and keyboard still work.'}return}
+ if(activeGamepad!==pad.index){activeGamepad=pad.index;gamepadButtons={};$('gamepadStatus').textContent='Controller connected · ready to play'}
+ const pressed=i=>!!pad.buttons[i]?.pressed;
+ const fresh=i=>pressed(i)&&!gamepadButtons[i];
+ if(fresh(0)){if(state==='menu'||state==='over')start();else serve()}
+ if(fresh(9))pause();
+ if(state==='playing'||state==='serve'){
+ let axis=pad.axes[0]||0;
+ axis=Math.abs(axis)>.18?(axis-Math.sign(axis)*.18)/.82:0;
+ if(pressed(14))axis=-1;if(pressed(15))axis=1;
+ target=clamp(target+axis*dt*2,-.86,.86);
+ }
+ gamepadButtons={0:pressed(0),9:pressed(9)};
+}
+window.addEventListener('gamepadconnected',()=>{$('gamepadStatus').textContent='Controller detected · press A to play'});
+window.addEventListener('gamepaddisconnected',()=>{gamepadButtons={}});
+
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+function project(x,z,h=0){let scale=.40+.60*z;return{x:500+x*360*scale,y:160+z*470-h*scale,s:scale};}
+function line(points,color,width=2){ctx.beginPath();points.forEach((p,i)=>{const q=project(...p);i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)});ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke()}
+function polygon(points,fill){ctx.beginPath();points.forEach((p,i)=>{const q=project(...p);i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)});ctx.closePath();ctx.fillStyle=fill;ctx.fill()}
+function tone(freq){if(!sound)return;try{audio??=new(window.AudioContext||window.webkitAudioContext)();audio.resume();let o=audio.createOscillator(),g=audio.createGain();o.connect(g);g.connect(audio.destination);o.frequency.value=freq;g.gain.setValueAtTime(.07,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.13);o.start();o.stop(audio.currentTime+.14)}catch(e){}}
+function sync(){$('you').textContent=you;$('ai').textContent=ai;$('rally').textContent=rally;$('best').textContent=best;$('phase').textContent=state==='playing'?'LIVE':state==='serve'?'SERVE':state==='paused'?'PAUSED':'READY'}
+function serve(){if(state!=='serve')return;athletes.you.swing=1;athletes.you.side=1;ball={x:px,z:.88,vx:(Math.random()-.5)*.5,vz:-.65};trail=[];state='playing';tone(440);$('hint').textContent='FIND THE ANGLE. KEEP IT IN PLAY.';sync()}
+function ready(){state='serve';rally=0;trail=[];ball={x:px,z:.9,vx:0,vz:0};$('hint').textContent='YOUR SERVE — PRESS SPACE OR TAP THE COURT';sync()}
+function start(){you=ai=best=0;px=ax=target=0;$('overlay').classList.add('hidden');ready()}
+function pause(){if(state==='playing'||state==='serve'){wait=state;state='paused';$('pause').textContent='Resume match'}else if(state==='paused'){state=wait;$('pause').textContent='Pause match'}sync()}
+function point(player){if(player)you++;else ai++;tone(player?660:180);state='between';wait=.95;sync();$('hint').textContent=player?'POINT TO YOU. NICE PLACEMENT.':'POINT TO CLUB AI. NEXT BALL.';if(you>=7||ai>=7){state='over';$('title').textContent=you>=7?'Your court. Your win.':'A worthy opponent.';$('message').textContent=`Final score: ${you} – ${ai}. ${you>=7?'Beautiful tennis. Fancy another?':'Take another shot at the club champion.'}`;$('play').textContent='Play again ↗';$('overlay').classList.remove('hidden');sync()}}
+function hit(x,player){const athlete=player?athletes.you:athletes.ai;athlete.swing=1;athlete.side=ball.x>=x?1:-1;ball.vx=(ball.x-x)*3.5+(Math.random()-.5)*.16;ball.vz=(player?-1:1)*Math.min(1.28,.72+rally*.035);rally++;best=Math.max(best,rally);tone(player?490:340);for(let i=0;i<12;i++)particles.push({x:ball.x,z:ball.z,dx:(Math.random()-.5)*.5,dz:(Math.random()-.5)*.5,life:.4});sync()}
+function update(dt){if(state==='paused'||state==='menu'||state==='over')return;animationTime+=dt;const prevPx=px,prevAx=ax;if(state==='between'){animateAthlete(athletes.you,0,dt);animateAthlete(athletes.ai,0,dt);wait-=dt;if(wait<=0)ready();return}if(keys.ArrowLeft||keys.a)target-=dt*2;if(keys.ArrowRight||keys.d)target+=dt*2;target=clamp(target,-.86,.86);px+=(target-px)*Math.min(1,dt*16);animateAthlete(athletes.you,px-prevPx,dt);if(state==='serve'){animateAthlete(athletes.ai,0,dt);ball.x=px;return}
+let speed={easy:.65,normal:.95,hard:1.35}[difficulty];let aim=ball.vz<0?clamp(ball.x+ball.vx*Math.max(0,(ball.z-.12)/-ball.vz),-.86,.86):0;ax+=clamp(aim-ax,-speed*dt,speed*dt);animateAthlete(athletes.ai,ax-prevAx,dt);
+let old=ball.z;ball.x+=ball.vx*dt;ball.z+=ball.vz*dt;
+if(old>.12&&ball.z<=.12&&ball.vz<0){if(Math.abs(ball.x-ax)<.23&&Math.abs(ball.x)<1.06){ball.z=.12;hit(ax,false)}else{point(true);return}}
+if(old<.91&&ball.z>=.91&&ball.vz>0){if(Math.abs(ball.x-px)<.25&&Math.abs(ball.x)<1.06){ball.z=.91;hit(px,true)}else{point(false);return}}
+trail.push({x:ball.x,z:ball.z});if(trail.length>16)trail.shift();particles.forEach(p=>{p.life-=dt;p.x+=p.dx*dt;p.z+=p.dz*dt});particles=particles.filter(p=>p.life>0);
+}
+// Articulated canvas athletes: footwork, breathing, and timed racket swings.
+function drawAthlete(x,z,a,isYou){
+ const p=project(x,z),skin=isYou?'#bc825e':'#dba67f',shirt=isYou?'#cdddac':'#ecaa92';
+ const stride=Math.sin(a.step)*a.motion,breath=Math.sin(animationTime*3)*1.1;
+ const swing=Math.sin((1-a.swing)*Math.PI)*Number(a.swing>0);
+ ctx.save();ctx.translate(p.x,p.y);ctx.scale(p.s,p.s);ctx.lineCap='round';ctx.lineJoin='round';
+ ctx.fillStyle='#12273f55';ctx.beginPath();ctx.ellipse(6,3,32,9,0,0,Math.PI*2);ctx.fill();
+ ctx.translate(stride*2,-Math.abs(stride)*3-breath);
+ function limb(points,color,width){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke()}
+ // Bent legs and white trainers move in opposing strides.
+ limb([[-10,-39],[-14-stride*8,-20],[-17-stride*13,-5]],skin,10);
+ limb([[10,-39],[14+stride*8,-21],[17+stride*13,-5]],skin,10);
+ limb([[-17-stride*13,-4],[-24-stride*13,-3]],'#edf4f3',9);
+ limb([[17+stride*13,-4],[25+stride*13,-3]],'#edf4f3',9);
+ ctx.fillStyle='#23384c';ctx.beginPath();ctx.moveTo(-16,-49);ctx.lineTo(16,-49);ctx.lineTo(17,-31);ctx.lineTo(3,-31);ctx.lineTo(0,-39);ctx.lineTo(-3,-31);ctx.lineTo(-17,-31);ctx.closePath();ctx.fill();
+ const turn=a.side*swing*5;
+ ctx.fillStyle=shirt;ctx.beginPath();ctx.moveTo(-17+turn,-78);ctx.quadraticCurveTo(0+turn,-86,17+turn,-78);ctx.lineTo(15,-48);ctx.quadraticCurveTo(0,-44,-15,-48);ctx.closePath();ctx.fill();
+ ctx.fillStyle=isYou?'#a6bf87':'#d58e7b';ctx.fillRect(-14,-55,28,5);
+ if(isYou){ctx.fillStyle='#ffffffb0';ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.fillText('01',turn,-62)}
+ limb([[-15+turn,-74],[-24,-60],[-18-swing*10,-48]],skin,8);
+ const shoulder=[16+turn,-74],elbow=[26+a.side*swing*16,-59-swing*13],hand=[29+a.side*swing*33,-45-swing*42];
+ limb([shoulder,elbow,hand],skin,8);limb([[hand[0]-1,hand[1]-3],[hand[0]+1,hand[1]+1]],'#f4f6f1',9);
+ ctx.save();ctx.translate(...hand);ctx.rotate(a.side*(-.45+swing*1.9));limb([[0,0],[0,-22]],'#26384b',5);
+ ctx.beginPath();ctx.ellipse(0,-38,13,19,0,0,Math.PI*2);ctx.fillStyle='#bbd3df33';ctx.fill();ctx.strokeStyle=isYou?'#e1efab':'#f3c0a8';ctx.lineWidth=3;ctx.stroke();ctx.save();ctx.clip();
+ for(let i=-12;i<=12;i+=5)limb([[i,-58],[i,-18]],'#e1edf2aa',.7);
+ for(let i=-53;i<=-23;i+=5)limb([[-15,i],[15,i]],'#e1edf2aa',.7);ctx.restore();ctx.restore();
+ limb([[turn,-81],[turn,-87]],skin,10);
+ ctx.fillStyle=skin;ctx.beginPath();ctx.ellipse(turn,-96,11,13,0,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle=isYou?'#342a29':'#47372b';ctx.beginPath();ctx.ellipse(turn,-102,11,8,0,Math.PI,Math.PI*2);ctx.fill();
+ if(isYou){ctx.beginPath();ctx.ellipse(turn,-97,10,10,0,0,Math.PI);ctx.fill()}
+ else{ctx.fillStyle='#302a2b';ctx.beginPath();ctx.arc(turn-4,-96,1.2,0,7);ctx.arc(turn+4,-96,1.2,0,7);ctx.fill()}
+ limb([[turn-10,-102],[turn+10,-102]],isYou?'#e6f3c7':'#f4eee7',4);
+ ctx.restore();
+}
+function draw(t){let g=ctx.createLinearGradient(0,0,0,720);g.addColorStop(0,'#142630');g.addColorStop(1,'#233f48');ctx.fillStyle=g;ctx.fillRect(0,0,1000,720);ctx.fillStyle='#b1d2b21a';for(let i=0;i<38;i++){let x=(i*173)%1000,y=65+(i*47)%100;ctx.fillRect(x,y,2,2)}
+polygon([[-1.48,-.1],[1.48,-.1],[1.48,1.12],[-1.48,1.12]],'#526f8d');polygon([[-1,0],[1,0],[1,1],[-1,1]],'#789ab9');polygon([[-.76,0],[.76,0],[.76,1],[-.76,1]],'#81a1bf');
+line([[-1,0],[1,0],[1,1],[-1,1],[-1,0]],'#d8e9df',3);line([[-.76,0],[-.76,1]],'#d8e9df');line([[.76,0],[.76,1]],'#d8e9df');line([[-.76,.25],[.76,.25]],'#d8e9df');line([[-.76,.75],[.76,.75]],'#d8e9df');line([[0,.25],[0,.75]],'#d8e9df');
+for(let side of [-1,1]){for(let z of [0,.5,1]){let p=project(side*1.36,z);ctx.strokeStyle='#6b888d';ctx.lineWidth=4*p.s;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x,p.y-100*p.s);ctx.stroke();ctx.fillStyle='#e8f9da';ctx.fillRect(p.x-15*p.s,p.y-100*p.s,30*p.s,4*p.s)}}
+drawAthlete(ax,.12,athletes.ai,false);let p=project(-1.08,.5),q=project(1.08,.5);ctx.fillStyle='#0a1c28bb';ctx.fillRect(p.x,p.y-33,q.x-p.x,34);ctx.strokeStyle='#78949b55';ctx.lineWidth=1;for(let x=p.x;x<q.x;x+=12){ctx.beginPath();ctx.moveTo(x,p.y-33);ctx.lineTo(x,p.y);ctx.stroke()}for(let y=p.y-30;y<p.y;y+=7){ctx.beginPath();ctx.moveTo(p.x,y);ctx.lineTo(q.x,y);ctx.stroke()}ctx.fillStyle='#edf0d7';ctx.fillRect(p.x-3,p.y-36,q.x-p.x+6,4);ctx.fillStyle='#a4b9b9';ctx.fillRect(p.x-5,p.y-40,5,50);ctx.fillRect(q.x,p.y-40,5,50);
+if(state!=='menu'){trail.forEach((b,i)=>{let p=project(b.x,b.z,22);ctx.beginPath();ctx.arc(p.x,p.y,(i/16)*6*p.s,0,7);ctx.fillStyle=`rgba(220,246,141,${i/32})`;ctx.fill()});let b=project(ball.x,ball.z,22+12*Math.sin(ball.z*Math.PI));let sh=project(ball.x,ball.z);ctx.beginPath();ctx.ellipse(sh.x,sh.y,8*sh.s,3*sh.s,0,0,7);ctx.fillStyle='#0c2d4677';ctx.fill();ctx.beginPath();ctx.arc(b.x,b.y,8*b.s,0,7);ctx.shadowColor='#dcf68d';ctx.shadowBlur=15;ctx.fillStyle='#e3fa83';ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#ffffffaa';ctx.lineWidth=1;ctx.stroke()}
+drawAthlete(px,.91,athletes.you,true);particles.forEach(b=>{let p=project(b.x,b.z,25);ctx.fillStyle=`rgba(225,250,160,${b.life*2})`;ctx.fillRect(p.x,p.y,3,3)});ctx.fillStyle='#bfdbd238';ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillText('B A S E L I N E   /   C L U B',500,685);
+if(state==='paused'){ctx.fillStyle='#0b1925aa';ctx.fillRect(0,0,1000,720);ctx.fillStyle='#f1f5ed';ctx.font='600 36px system-ui';ctx.fillText('Taking a breather.',500,340);ctx.font='16px system-ui';ctx.fillText('Press P or Resume match to return',500,375)} }
+function frame(t){let dt=Math.min(.035,(t-last)/1000||.016);last=t;pollGamepad(dt);update(dt);draw(t);requestAnimationFrame(frame)}
+function pointer(e){let r=canvas.getBoundingClientRect();target=clamp(((e.clientX-r.left)/r.width*1000-500)/(360*(.40+.60*.91)),-.86,.86)}
+canvas.addEventListener('pointermove',pointer);canvas.addEventListener('pointerdown',e=>{pointer(e);canvas.setPointerCapture(e.pointerId);serve()});window.addEventListener('keydown',e=>{if(e.target.tagName==='SELECT'||e.target.tagName==='BUTTON')return;if(['ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();keys[e.key]=true;if(e.key===' ')serve();if(e.key.toLowerCase()==='p'&&!e.repeat)pause()});window.addEventListener('keyup',e=>keys[e.key]=false);window.addEventListener('blur',()=>{keys={};if(state==='playing'||state==='serve')pause()});$('play').onclick=start;$('pause').onclick=pause;$('difficulty').onchange=e=>difficulty=e.target.value;$('sound').onclick=()=>{sound=!sound;$('sound').textContent=sound?'Sound on ♫':'Sound off ♫';$('sound').setAttribute('aria-pressed',sound);if(sound)tone(440)};requestAnimationFrame(frame);
+</script></body></html>
