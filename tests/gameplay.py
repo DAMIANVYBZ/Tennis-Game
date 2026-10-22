@@ -19,7 +19,7 @@ with sync_playwright() as p:
     page.wait_for_function('!!window.__tennis',timeout=60000)
     page.get_by_role('button',name='PLAY INTER-HALL MATCH').click()
     page.get_by_role('button',name='OPEN ASSET GALLERY').click()
-    page.locator('#enterCourt').click()
+    page.locator('#enterCourt').click();page.evaluate('__tennis.arrival.skip()')
     page.wait_for_function('__tennis.sound.sampleState==="ready"')
     page.wait_for_function('__tennis.renderer.info.render.triangles>10000')
     page.evaluate('window.requestAnimationFrame=()=>0')

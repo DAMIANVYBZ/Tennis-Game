@@ -22,7 +22,7 @@ with sync_playwright() as p:
  page.evaluate('pad.buttons[0].pressed=false;__tennis.pollPad();__tennis.lobby.pollPad()')
  page.get_by_role('button',name='PLAY INTER-HALL MATCH').focus()
  page.evaluate('pad.buttons[0].pressed=true;__tennis.lobby.pollPad();pad.buttons[0].pressed=false;__tennis.lobby.pollPad()')
- assert page.locator('.prep-grid').is_visible()
+ assert page.locator('.preparation-home').is_visible()
  page.evaluate('pad.buttons[1].pressed=true;__tennis.lobby.pollPad();pad.buttons[1].pressed=false;__tennis.lobby.pollPad()')
  assert page.locator('.ug-lobby').is_visible()
  page.get_by_role('button',name='PLAY INTER-HALL MATCH').click()
@@ -30,7 +30,7 @@ with sync_playwright() as p:
  page.locator('[data-control="touch"]').click();assert page.locator('body').get_attribute('data-controls')=='touch'
  page.locator('[data-control="ps5"]').click();assert page.locator('body').get_attribute('data-controls')=='ps5'
  page.locator('[data-control="keyboard"]').click()
- page.locator('[data-setting="hall"]').select_option('Volta Hall');page.locator('[data-setting="difficulty"]').select_option('hard');page.locator('[data-setting="assist"]').fill('20')
+ page.get_by_role('button',name='Settings',exact=True).click();page.locator('[data-tab="court"]').click();page.locator('[data-setting="hall"]').select_option('Volta Hall');page.locator('[data-tab="match"]').click();page.locator('[data-setting="difficulty"]').select_option('hard');page.locator('[data-setting="shotTiming"]').select_option('manual');page.locator('[data-setting="assist"]').fill('20');page.locator('[data-setting="shotTiming"]').select_option('auto');page.get_by_role('button',name='DONE').click()
  page.get_by_role('button',name='OPEN ASSET GALLERY').click();assert page.locator('.asset-card').count()==5
  page.get_by_role('button',name='Club shop',exact=True).click();assert page.locator('.asset-card').count()==13
  assert page.locator('[data-buy="cap"]').is_visible();assert page.evaluate('__tennis.lobby.profile.equipped.headwear')=='club-band'
@@ -39,7 +39,7 @@ with sync_playwright() as p:
  page.locator('[data-buy="ocean-kit"]').click();page.locator('[data-equip="ocean-kit"]').click();assert page.evaluate('__tennis.lobby.profile.equipped.outfit')=='ocean-kit'
  assert page.locator('[data-buy="carbon-racket"]').is_disabled()
  page.locator('[data-buy="towel"]').click();page.locator('[data-equip="towel"]').click()
- page.locator('#enterCourt').click();assert page.locator('body').get_attribute('data-screen')=='court'
+ page.locator('#enterCourt').click();page.evaluate('__tennis.arrival.skip()');assert page.locator('body').get_attribute('data-screen')=='court'
  assert page.evaluate('__tennis.match.state')=='serve';assert page.evaluate('__tennis.match.difficulty')=='hard';assert page.evaluate('__tennis.match.assist')==.2
  assert page.locator('[data-shot="topspin"]').inner_text().startswith('Space');assert not page.locator('#joystick').is_visible()
  page.locator('#court').focus();page.keyboard.down('Space');page.wait_for_timeout(250);assert page.evaluate('__tennis.match.shot.type')=='topspin';page.keyboard.up('Space');assert page.evaluate('__tennis.match.state')=='toss'
@@ -49,12 +49,12 @@ with sync_playwright() as p:
  page.reload();page.wait_for_function('!!window.__tennis');assert page.locator('.ug-lobby').is_visible();assert page.evaluate('__tennis.lobby.profile.equipped.headwear')=='cap';assert page.evaluate('__tennis.lobby.profile.equipped.towel')=='towel';assert page.evaluate('__tennis.lobby.profile.settings.controls')=='touch'
  page.screenshot(path='/workspace/tennis-club-landing.png')
  page.get_by_role('button',name='PLAY INTER-HALL MATCH').click();page.screenshot(path='/workspace/tennis-club-settings.png');page.get_by_role('button',name='OPEN ASSET GALLERY').click();page.screenshot(path='/workspace/tennis-club-gallery.png')
- page.go_back();assert page.locator('.prep-grid').is_visible()
+ page.go_back();assert page.locator('.preparation-home').is_visible()
  page.set_viewport_size({'width':390,'height':844});assert page.evaluate('document.documentElement.scrollWidth<=innerWidth');page.get_by_role('button',name='OPEN ASSET GALLERY').click();page.screenshot(path='/workspace/tennis-club-mobile.png');assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
  # Theme tokens, hall names and completed-match rewards all drive the supplied UI.
  assert page.evaluate('getComputedStyle(document.documentElement).getPropertyValue("--ug-blue").trim()')=='#002147'
  assert page.evaluate('getComputedStyle(document.documentElement).getPropertyValue("--ug-gold").trim()')=='#d4af37'
- page.locator('#enterCourt').click();assert 'VOLTA' in page.locator('#youHall').inner_text()
+ page.locator('#enterCourt').click();page.evaluate('__tennis.arrival.skip()');assert 'VOLTA' in page.locator('#youHall').inner_text()
  before=page.evaluate('__tennis.lobby.profile.credits')
  page.evaluate('__tennis.match.points={you:20,ai:18};__tennis.match.state="rally";__tennis.match.score("you","WINNER")')
  assert page.locator('#overlay').is_visible();assert page.locator('#earnedCredits').inner_text()=='+50';assert page.evaluate('__tennis.lobby.profile.credits')==before+50
@@ -63,6 +63,6 @@ with sync_playwright() as p:
  page.screenshot(path='/workspace/tennis-ug-standings.png')
  assert not errors,errors
  mobile=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True);phone=mobile.new_page();phone_errors=setup(phone);assert phone.evaluate('__tennis.lobby.profile.settings.controls')=='touch'
- phone.get_by_role('button',name='PLAY INTER-HALL MATCH').click();phone.get_by_role('button',name='OPEN ASSET GALLERY').click();phone.locator('#enterCourt').click();assert phone.locator('#joystick').is_visible();assert phone.locator('#touchSprint').is_visible();assert not phone_errors,phone_errors
+ phone.get_by_role('button',name='PLAY INTER-HALL MATCH').click();phone.get_by_role('button',name='OPEN ASSET GALLERY').click();phone.locator('#enterCourt').click();phone.evaluate('__tennis.arrival.skip()');assert phone.locator('#joystick').is_visible();assert phone.locator('#touchSprint').is_visible();assert not phone_errors,phone_errors
  print('PASS: landing cannot auto-start; 3-page flow; all control layouts; touch sprint; owned/locked gear; credits, purchases and equipping; visible cap; saved preferences; browser Back; desktop and phone layouts. No browser errors.')
  browser.close()

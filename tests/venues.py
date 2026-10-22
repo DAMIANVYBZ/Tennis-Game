@@ -16,12 +16,12 @@ with sync_playwright() as p:
  page.route('http://baseline.test/**',asset)
  def ready():page.wait_for_function('window.__tennis?.environment.state==="ready" && __tennis.characterStatus.state==="ready"',timeout=120000)
  def open_court():
-  page.get_by_role('button',name='PLAY INTER-HALL MATCH').click();page.get_by_role('button',name='OPEN ASSET GALLERY').click();page.locator('#enterCourt').click()
+  page.get_by_role('button',name='PLAY INTER-HALL MATCH').click();page.get_by_role('button',name='OPEN ASSET GALLERY').click();page.locator('#enterCourt').click();page.evaluate('__tennis.arrival.skip()')
  page.goto('http://baseline.test/?court=oval-east');ready()
  assert page.evaluate('__tennis.environment.venue.id')=='oval-east'
  open_court();assert page.evaluate('__tennis.match.state')!='menu'
  assert page.evaluate('__tennis.environment.root.children[0].position.x')==-13.5
- page.locator('#returnClub').click()
+ page.locator('#returnClub').click();page.get_by_role('button',name='Settings',exact=True).click();page.locator('[data-tab="court"]').click()
  options=page.locator('[data-setting="venue"] option');assert options.count()==7
  assert 'Jean' not in options.all_text_contents()
  for court in ['oval-west','commonwealth-hard','commonwealth-clay-west','commonwealth-clay-east','stadium-west','stadium-east']:
@@ -44,8 +44,8 @@ with sync_playwright() as p:
  page.wait_for_function('__tennis.environment.state==="ready" && __tennis.environment.root.userData.venue==="stadium-west"',timeout=120000)
  page.wait_for_timeout(1500);assert page.evaluate('__tennis.environment.root.userData.venue')=='stadium-west'
  # Mobile settings remain usable with all seven choices.
- page.set_viewport_size({'width':390,'height':844});page.evaluate("__tennis.lobby.navigate('setup')")
- page.locator('[data-setting="venue"]').select_option('oval-east');ready()
+ page.set_viewport_size({'width':390,'height':844});page.evaluate("__tennis.lobby.navigate('settings')")
+ page.locator('[data-tab="court"]').click();page.locator('[data-setting="venue"]').select_option('oval-east');ready()
  assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
  assert not errors,errors
  print('PASS: all 7 rendered court choices, source scene offsets/cache, URL and saved selection, basketball exclusion, failed-load gating/retry, rapid selection and mobile layout. No browser errors.')

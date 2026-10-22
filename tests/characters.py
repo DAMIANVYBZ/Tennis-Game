@@ -20,7 +20,7 @@ with sync_playwright() as p:
  assert page.locator('[data-character="female"] img').evaluate('(img)=>img.complete&&img.naturalWidth>0')
  assert page.locator('[data-character="male"] img').evaluate('(img)=>img.complete&&img.naturalWidth>0')
  page.locator('[data-character="male"]').click();assert page.evaluate('__tennis.youModel.sex')=='male';assert page.evaluate('__tennis.aiModel.sex')=='female'
- page.locator('[data-character="female"]').click();page.screenshot(path='/workspace/tennis-character-gallery.png');page.locator('#enterCourt').click();page.wait_for_timeout(600)
+ page.locator('[data-character="female"]').click();page.screenshot(path='/workspace/tennis-character-gallery.png');page.locator('#enterCourt').click();page.evaluate('__tennis.arrival.skip()');page.wait_for_timeout(600)
  assert page.evaluate('__tennis.renderer.info.render.triangles')>90000
  page.screenshot(path='/workspace/tennis-rigged-court.png')
  # Deterministic render checks use the actual player skeleton, never stand-in geometry.
@@ -31,10 +31,10 @@ with sync_playwright() as p:
  assert data['serve'][1]>data['idle'][1]+.4,data
  # Racket remains attached to the animated hand in every pose and on both models.
  assert page.evaluate('[__tennis.youModel,__tennis.aiModel].every(a=>a.racket.parent===a.current.bones.RightHand)')
- page.locator('#returnClub').click();page.locator('[data-setting="character"]').select_option('male');page.reload();page.wait_for_function('__tennis.characterStatus.state==="ready"',timeout=120000);assert page.evaluate('__tennis.lobby.profile.settings.character')=='male';assert page.evaluate('__tennis.youModel.sex')=='male'
+ page.locator('#returnClub').click();page.get_by_role('button',name='Settings',exact=True).click();page.locator('[data-tab="court"]').click();page.locator('[data-setting="character"]').select_option('male');page.reload();page.wait_for_function('__tennis.characterStatus.state==="ready"',timeout=120000);assert page.evaluate('__tennis.lobby.profile.settings.character')=='male';assert page.evaluate('__tennis.youModel.sex')=='male'
  # Network failure blocks court entry, while keeping the club usable and offering retry.
  bad=browser.new_page(viewport={'width':390,'height':844});bad.route('http://baseline.test/**',asset);bad.route('**/female.glb',lambda r:r.fulfill(status=503,body='temporary failure'));bad.goto('http://baseline.test/');bad.wait_for_function('window.__tennis?.characterStatus.state==="error"',timeout=120000)
- bad.get_by_role('button',name='PLAY INTER-HALL MATCH').click();bad.get_by_role('button',name='OPEN ASSET GALLERY').click();assert bad.locator('#enterCourt').is_disabled();assert bad.locator('#retryCharacters').is_visible();bad.unroute('**/female.glb');bad.locator('#retryCharacters').click();bad.wait_for_function('__tennis.characterStatus.state==="ready"',timeout=120000);assert bad.locator('#enterCourt').is_enabled();bad.locator('#enterCourt').click();bad.wait_for_timeout(400);assert bad.locator('#joystick').is_visible() is False # desktop pointer defaults to keyboard
+ bad.get_by_role('button',name='PLAY INTER-HALL MATCH').click();bad.get_by_role('button',name='OPEN ASSET GALLERY').click();assert bad.locator('#enterCourt').is_disabled();assert bad.locator('#retryCharacters').is_visible();bad.unroute('**/female.glb');bad.locator('#retryCharacters').click();bad.wait_for_function('__tennis.characterStatus.state==="ready"',timeout=120000);assert bad.locator('#enterCourt').is_enabled();bad.locator('#enterCourt').click();bad.evaluate('__tennis.arrival.skip()');bad.wait_for_timeout(400);assert bad.locator('#joystick').is_visible() is False # desktop pointer defaults to keyboard
  assert not errors,errors
  print('PASS: both user GLBs, 65-bone skinned meshes, portraits, saved male/female selection, animated run/shot/serve, hand-bound rackets, rendered court, recoverable loading failure. No browser errors.')
  browser.close()

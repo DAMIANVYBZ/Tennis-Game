@@ -19,10 +19,10 @@ with sync_playwright() as p:
  page.locator('#menuMusic').click();page.wait_for_function('__tennis.music.state==="playing"&&__tennis.music.audio.currentTime>.15&&__tennis.music.ctx.state==="running"')
  assert page.evaluate('__tennis.music.audio.loop');assert 39<page.evaluate('__tennis.music.audio.duration')<41
  before=page.evaluate('__tennis.music.audio.currentTime');page.get_by_role('button',name='PLAY INTER-HALL MATCH').click();assert page.evaluate('__tennis.music.audio.currentTime')>=before
- page.locator('[data-setting="musicVolume"]').fill('20');assert abs(page.evaluate('__tennis.music.gain.gain.value')-.2)<1e-6
+ page.get_by_role('button',name='Settings',exact=True).click();page.locator('[data-tab="audio"]').click();page.locator('[data-setting="musicVolume"]').fill('20');assert abs(page.evaluate('__tennis.music.gain.gain.value')-.2)<1e-6
  page.locator('[data-setting="musicEnabled"]').select_option('off');assert page.evaluate('__tennis.music.audio.paused && __tennis.music.gain.gain.value===0')
  page.locator('[data-setting="musicEnabled"]').select_option('on');page.wait_for_function('!__tennis.music.audio.paused')
- page.get_by_role('button',name='OPEN ASSET GALLERY').click();assert page.evaluate('!__tennis.music.audio.paused')
+ page.get_by_role('button',name='DONE').click();page.get_by_role('button',name='OPEN ASSET GALLERY').click();assert page.evaluate('!__tennis.music.audio.paused')
  page.locator('#enterCourt').click();assert page.evaluate('__tennis.music.audio.paused && __tennis.music.gain.gain.value===0');assert page.evaluate('__tennis.match.state')=='serve'
  stopped=page.evaluate('__tennis.music.audio.currentTime');page.wait_for_timeout(250);assert abs(page.evaluate('__tennis.music.audio.currentTime')-stopped)<.03
  page.locator('#court').focus();page.keyboard.press('p');assert page.evaluate('__tennis.match.state')=='paused';assert page.evaluate('__tennis.music.audio.paused')
