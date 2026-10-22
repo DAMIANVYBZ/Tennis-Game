@@ -60,15 +60,20 @@ export class Athlete{
   rig.racket.traverse(o=>{if(o.name==='racket-frame')o.material.color.set(item('racket')?.color||'#d6e7a8')});
   rig.band.visible=item('headwear')?.id==='club-band';rig.cap.visible=item('headwear')?.id==='cap';rig.wristwear.forEach(o=>o.visible=!!item('wristwear'));
  }
- pose(p,opponent,{time=0,preparing=false,toss=0}={}){
+ reachRacket(target,weight){
+  const rig=this.current,rim=rig.racket.getObjectByName('racket-frame');if(!rim)return;
+  const end=new THREE.Vector3(),joint=new THREE.Vector3(),from=new THREE.Vector3(),to=new THREE.Vector3(),world=new THREE.Quaternion(),parent=new THREE.Quaternion(),turn=new THREE.Quaternion(),identity=new THREE.Quaternion();
+  for(let i=0;i<5;i++)for(const name of ['RightForeArm','RightArm']){const bone=rig.bones[name];rim.getWorldPosition(end);bone.getWorldPosition(joint);from.copy(end).sub(joint);to.copy(target).sub(joint);if(from.lengthSq()<1e-8||to.lengthSq()<1e-8)continue;turn.setFromUnitVectors(from.normalize(),to.normalize()).slerp(identity,1-weight*.8);bone.getWorldQuaternion(world);bone.parent.getWorldQuaternion(parent).invert();bone.quaternion.copy(parent.multiply(turn.multiply(world)));this.root.updateMatrixWorld(true)}
+ }
+ pose(p,opponent,{time=0,preparing=false,toss=0,reach=null}={}){
   this.root.position.set(p.x,0,p.z);this.root.rotation.y=Math.atan2(opponent.x-p.x,opponent.z-p.z);const rig=this.current;if(!rig)return;
   for(const j of rig.joints.values()){j.bone.quaternion.copy(j.rest);j.bone.position.copy(j.position)}
-  const stride=Math.sin(p.step),run=p.motion,swing=p.swing>0?Math.sin((1-p.swing)*Math.PI):0,side=p.side||1;
+  const stride=Math.sin(p.step),run=p.motion||0,swing=p.swing>0?Math.sin((1-p.swing)*Math.PI):0,side=p.side||1;
   // T-pose arms lower around character-space Z; elbows flex forward around Y.
   this.rotate('LeftArm',-.12-stride*run*.25,0,-1.05+swing*.18);
   this.rotate('RightArm',-.18+stride*run*.25-swing*.6,0,1.02-side*swing*.55);
   this.rotate('LeftForeArm',0,-.75,0);this.rotate('RightForeArm',0,.85-swing*.5,0);
-  this.rotate('Spine',run*.07,side*swing*.4,Math.sin(time*2)*.009);
+  this.rotate('Spine',run*.22,side*swing*.4,Math.sin(time*2)*.009);
   this.rotate('Spine1',0,side*swing*.28,0);this.rotate('Head',0,-side*swing*.3,0);
   this.rotate('LeftUpLeg',stride*run*.55-.08,0,0);this.rotate('RightUpLeg',-stride*run*.55-.08,0,0);
   this.rotate('LeftLeg',Math.max(0,-stride)*run*.8+.12,0,0);this.rotate('RightLeg',Math.max(0,stride)*run*.8+.12,0,0);
@@ -76,7 +81,15 @@ export class Athlete{
   if(preparing){this.rotate('Spine1',0,-.3,0);this.rotate('RightArm',-.4,-.45,-.15)}
   if(toss>0){this.rotate('LeftArm',-toss*2.55,0,toss*.65);this.rotate('RightArm',-toss*2.5,0,-toss*.55);this.rotate('RightForeArm',0,toss*.35,0);this.rotate('Spine',-.12*toss,0,0)}
   for(const hand of ['Left','Right'])for(const finger of ['Index','Middle','Ring','Pinky'])for(let i=1;i<=3;i++)this.rotate(hand+'Hand'+finger+i,0,0,(hand==='Right'?1:-1)*.65);
-  rig.visual.position.y=Math.abs(stride)*run*.025+Math.sin(time*3)*.003;
+  rig.visual.position.set(0,Math.abs(stride)*run*.025+Math.sin(time*3)*.003,0);
+  if(!toss){this.rotate('LeftUpLeg',-.08,0,-.04);this.rotate('RightUpLeg',-.08,0,.04);this.rotate('LeftLeg',.12);this.rotate('RightLeg',.12);rig.visual.position.y-=.035;
+   if(reach){const target=new THREE.Vector3(reach.target.x,reach.target.y,reach.target.z),local=this.root.worldToLocal(target.clone()),weight=reach.weight,stretch=Math.min(1,Math.hypot(local.x,local.z)/1.8)*weight,low=Math.max(0,1-reach.target.y)*weight,side=Math.sign(local.x)||1;
+    this.rotate('Spine',Math.min(.35,Math.max(-.15,local.z*.2))*stretch,0,-side*.3*stretch);this.rotate('Spine1',.15*low,-side*.22*stretch,-side*.16*stretch);this.rotate('Head',-.1*low,side*.12*stretch,side*.12*stretch);
+    this.rotate(side>0?'RightUpLeg':'LeftUpLeg',-.28*stretch-.25*low,0,side*.16*stretch);this.rotate(side>0?'RightLeg':'LeftLeg',.38*stretch+.4*low);this.rotate(side>0?'LeftUpLeg':'RightUpLeg',.16*stretch);rig.visual.position.y-=.11*stretch+.18*low;
+    rig.visual.position.x=local.x*.12*stretch;rig.visual.position.z=Math.max(-.12,Math.min(.18,local.z*.1*stretch));
+    this.root.updateMatrixWorld(true);this.reachRacket(target,weight);
+   }
+  }
   this.root.updateMatrixWorld(true);
  }
 }

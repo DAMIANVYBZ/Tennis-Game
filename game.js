@@ -2,6 +2,7 @@ import * as THREE from './vendor/three.module.min.js';
 import {Match,COURT,clamp,landingIsIn} from './engine.mjs';
 import {CourtAudio} from './audio.mjs';
 import {MenuMusic} from './music.mjs';
+import {reachPose} from './motion.mjs';
 import {CourtArrival} from './arrival.mjs';
 import {CourtEnvironment} from './environment.mjs';
 import {getVenue} from './venues.mjs';
@@ -40,7 +41,7 @@ const youModel=new Athlete('human-player','female'),aiModel=new Athlete('club-op
 actors.add(youModel.root,aiModel.root);let packedProfile;
 const courtKit=new THREE.Group();courtKit.name='equipped-courtside-kit';world.add(courtKit);
 function applyEquipment(profile){packedProfile=profile;const sex=profile.settings.character||'female';youModel.select(sex);aiModel.select(sex==='female'?'male':'female');youModel.equip(profile);aiModel.equip({equipped:{}});const item=slot=>CATALOG.find(i=>i.id===profile.equipped[slot]);courtKit.traverse(o=>o.geometry?.dispose());courtKit.clear();if(item('bottle')){const bottle=cylinder(.09,.09,.37,item('bottle').color,courtKit,18);bottle.position.set(7.1,.2,3);const lid=cylinder(.065,.065,.04,'#f1eee1',courtKit);lid.position.set(7.1,.405,3)}if(item('towel')){box(.5,.025,.7,item('towel').color,7.1,.07,4,courtKit);for(let i=0;i<3;i++)box(.51,.027,.025,'#57818d',7.1,.075,4.2+i*.04,courtKit)}if(item('bag')){const bag=box(.48,.38,1.1,item('bag').color,7.2,.21,5.2,courtKit);bag.rotation.y=.2;bar(V(7.2,.4,4.9),V(7.2,.6,5.2),.025,'#a4b7bf',courtKit);bar(V(7.2,.6,5.2),V(7.2,.4,5.5),.025,'#a4b7bf',courtKit)}}
-function pose(model,p,isYou,time){const serving=match.state==='toss'&&match.server===(isYou?'you':'ai');model.pose(p,isYou?match.ai:match.you,{time,preparing:isYou&&!!match.shot,toss:serving?1-match.timer/.68:0})}
+function pose(model,p,isYou,time){const serving=match.state==='toss'&&match.server===(isYou?'you':'ai');model.pose(p,isYou?match.ai:match.you,{time,preparing:isYou&&!!match.shot,toss:serving?1-match.timer/.68:0,reach:!arrival.active&&match.state==='rally'?reachPose(p,match.ball,isYou?'you':'ai'):null})}
 const ballMesh=sphere(.085,'#e8f668',actors,18,12);const seamMaterial=new THREE.LineBasicMaterial({color:'#f6ffe0'});for(const side of [-1,1]){const pts=[];for(let i=0;i<=32;i++){const a=i/32*Math.PI*2;pts.push(V(Math.cos(a)*.065,Math.sin(a)*.085,side*.04*Math.cos(a*2)))}const curve=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),seamMaterial);ballMesh.add(curve)}
 const markerGeo=new THREE.RingGeometry(.17,.21,32);const landingMarker=new THREE.Mesh(markerGeo,new THREE.MeshBasicMaterial({color:'#d9efad',transparent:true,opacity:.65,side:THREE.DoubleSide}));landingMarker.rotation.x=-Math.PI/2;landingMarker.position.y=.06;actors.add(landingMarker);
 const aimMarker=new THREE.Mesh(new THREE.RingGeometry(.22,.25,32),new THREE.MeshBasicMaterial({color:'#ddefa8',transparent:true,opacity:.65,side:THREE.DoubleSide}));aimMarker.rotation.x=-Math.PI/2;aimMarker.position.y=.065;actors.add(aimMarker);
