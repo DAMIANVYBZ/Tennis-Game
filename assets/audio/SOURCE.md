@@ -8,3 +8,7 @@ These brief mono PCM effects were cropped from the gameplay audio uploaded by th
 - `shoe-b.wav`: 98.040–98.340 seconds; alternate shoe friction/squeak.
 
 Processing: mono, 22,050 Hz PCM16, 90 Hz high-pass filter, normalized peaks and short edge fades. The complete recording is not included. These sample excerpts are distinct from the game's original synthesized effects and the renderer's MIT license.
+
+## Menu instrumental
+
+`legon-court-walk.mp3` is an original 40-second, 16-bar instrumental generated for this game with `tools/compose-menu-music.py`: 96 BPM, warm electric-piano-style chords, soft pads, plucked melody, bass and restrained percussion. No third-party recordings or samples are used in this track. Stereo MP3, 32 kHz, 128 kbps. The script uses NumPy synthesis and ffmpeg encoding; it can reproduce the track deterministically.
