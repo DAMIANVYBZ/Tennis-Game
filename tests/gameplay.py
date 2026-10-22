@@ -1,87 +1,81 @@
-"""Meaningful browser regression checks. Requires Playwright and Chromium."""
+"""Chromium integration checks. pip install playwright; requires Chromium."""
 from pathlib import Path
+from urllib.parse import urlparse
+import mimetypes,shutil
 from playwright.sync_api import sync_playwright
-import shutil
-
+ROOT=Path(__file__).resolve().parents[1]
 with sync_playwright() as p:
-    browser=p.chromium.launch(executable_path=shutil.which('chromium'),headless=True,args=['--no-sandbox','--autoplay-policy=no-user-gesture-required'])
-    page=browser.new_page(viewport={'width':1440,'height':1200})
+    browser=p.chromium.launch(executable_path=shutil.which('chromium'),headless=True,args=['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader','--autoplay-policy=no-user-gesture-required'])
+    page=browser.new_page(viewport={'width':1440,'height':900})
     errors=[]
-    page.on('pageerror',lambda e:errors.append(str(e)))
-    page.set_content((Path(__file__).resolve().parents[1]/'index.html').read_text())
+    page.on('pageerror',lambda error:errors.append(str(error)))
+    def asset(route):
+        path=ROOT/urlparse(route.request.url).path.lstrip('/')
+        if path.is_dir():path=path/'index.html'
+        if not path.exists():route.fulfill(status=404,body='not found');return
+        route.fulfill(body=path.read_bytes(),content_type='text/javascript' if path.suffix in ['.mjs','.js'] else mimetypes.guess_type(str(path))[0] or 'application/octet-stream')
+    page.route('http://baseline.test/**',asset)
+    page.goto('http://baseline.test/')
+    page.wait_for_function('!!window.__tennis',timeout=60000)
     page.get_by_role('button',name='Step onto court').click()
-    # Remove animation scheduling so all physics checks use deterministic steps.
+    page.wait_for_function('__tennis.renderer.info.render.triangles>10000')
     page.evaluate('window.requestAnimationFrame=()=>0')
-    page.wait_for_timeout(60)
-    def js(s):return page.evaluate(s)
-    def step(n=1,dt=.02):js(f'for(let i=0;i<{n};i++)update({dt})')
-    def incoming(z=.905,x='px'):
-        js(f"state='playing';cancelShot();ball={{x:{x},z:{z},vx:0,vz:1,lastPlayer:false,bounced:true}}")
-    # Keyboard hold/release, power and actual audio.
-    page.keyboard.down('Space');step(30)
-    assert js('shot.type')=='topspin'
-    page.keyboard.up('Space')
-    assert js("state==='playing' && ball.vz<0 && ball.type==='topspin'")
-    assert js('audioEvents>0 && audio.state==="running"')
-    # No input must never return the ball.
-    incoming();step(9)
-    assert js("state==='between' && ai===1")
-    # Prepared, well-timed flat return requires explicit release.
-    incoming(.5);page.keyboard.down('x');step(18)
-    js('ball.z=.895;ball.x=px;ball.vx=0;ball.vz=1')
-    page.keyboard.up('x');step()
-    assert js("ball.vz<0 && ball.type==='flat' && feedback==='PERFECT'")
-    # Holding through contact is a miss, not an automatic shot.
-    incoming();page.keyboard.down('Space');step(9);page.keyboard.up('Space')
-    assert js("state==='between' && ai===2")
-    # A release too early expires before contact.
-    incoming(.5);page.keyboard.down('c');step(2);page.keyboard.up('c');step(30)
-    assert js("state==='between' && ai===3")
-    # AI assistance is capped and does not chase distant balls.
-    incoming(.7,'0.16');js('target=0;px=0;beginShot("topspin","test")');step(20,.001)
-    assert js('px<=.091')
-    incoming(.7,'0.8');js('target=0;px=0;beginShot("topspin","test")');step()
-    assert js('px===0')
-    # Aim and power affect velocity; shot variety changes flight shape.
-    js('ball={x:0,z:.91};launch(true,"topspin",.3,1,-1)')
-    left=js('ball.vx');slow=js('Math.abs(ball.vz)')
-    js('ball={x:0,z:.91};launch(true,"flat",1,1,1)')
-    assert left<0<js('ball.vx') and js('Math.abs(ball.vz)')>slow
-    js('ball={x:0,z:.91};launch(true,"lob",.6,1,0)')
-    assert js('ball.arc')==100
-    # Bad flat-shot timing can hit the net; out shots lose the hitter's point.
-    js('state="playing";ball={x:0,z:.51};launch(true,"flat",1,.1,0)');step()
-    assert js("state==='between' && feedback==='INTO THE NET'")
-    js('state="playing";ball={x:1.2,z:.30,vx:0,vz:-1,lastPlayer:true,bounced:false}');step()
-    assert js("state==='between' && feedback==='BALL OUT'")
-    # Controller press charges; release serves. Right stick aims, left moves.
-    js("""window.pad={index:0,connected:true,axes:[0,0,0],buttons:Array.from({length:16},()=>({pressed:false}))};Object.defineProperty(navigator,'getGamepads',{value:()=>[pad]});ready();pad.buttons[0].pressed=true;pollGamepad(.02)""")
-    assert js('shot.type')=='topspin'
-    step(20);js('pad.buttons[0].pressed=false;pollGamepad(.02)')
-    assert js("state==='playing'")
-    js('pad.axes[0]=1;pad.axes[2]=-.8;pollGamepad(.02)');before=js('target');step()
-    assert js('target')>before and abs(js('aimX')-(-.8+.18)/.82)<1e-8 # dead-zone scaling
-    js('pad.buttons[9].pressed=true;pollGamepad(.02)')
-    assert js('state')=='paused'
-    before=js('gameTime');step(5);assert js('gameTime')==before
-    js('pad.connected=false;pollGamepad(.02)')
-    assert 'disconnected' in page.locator('#gamepadStatus').inner_text()
-    # Mobile hold buttons also release shots, including pointer cancellation.
-    page.set_viewport_size({'width':390,'height':1000})
-    js('ready()')
-    button=page.locator('[data-shot="slice"]')
-    button.dispatch_event('pointerdown',{'pointerId':1});step(20)
-    button.dispatch_event('pointerup',{'pointerId':1})
-    assert js("state==='playing' && ball.type==='slice'")
+    page.wait_for_timeout(150)
+    def js(code):return page.evaluate(code)
+    def advance(seconds,input='{}'):js(f'for(let i=0;i<{int(seconds*120)};i++)__tennis.match.tick(1/120,{input})')
+    assert js('__tennis.match.state')=='serve'
+    page.keyboard.down('ArrowUp');input_before=js('__tennis.match.you.z')
+    advance(.2,'__tennis.buildInput(1/120)');page.keyboard.up('ArrowUp')
+    assert js('__tennis.match.you.z')<input_before
+    page.keyboard.down('Space');advance(.65);page.keyboard.up('Space')
+    assert js('__tennis.match.state')=='toss'
+    advance(.7);assert js('__tennis.match.state')=='rally'
+    assert js('__tennis.sound.events>0 && __tennis.sound.ctx.state==="running"')
+    page.keyboard.press('p');assert js('__tennis.match.state')=='paused'
+    before=js('__tennis.match.time');advance(.5);assert js('__tennis.match.time')==before
+    page.keyboard.press('p');assert js('__tennis.match.state')=='rally'
+    # Real gamepad polling with standard DualSense button positions.
+    js("""window.pad={index:0,connected:true,axes:[0,0,0,0],buttons:Array.from({length:16},()=>({pressed:false}))};Object.defineProperty(navigator,'getGamepads',{value:()=>[pad]});__tennis.match.start();pad.buttons[0].pressed=true;__tennis.pollPad()""")
+    assert js('__tennis.match.shot.type')=='topspin'
+    advance(.6);js('pad.buttons[0].pressed=false;__tennis.pollPad()')
+    assert js('__tennis.match.state')=='toss'
+    advance(.7)
+    js('pad.axes=[.7,-.7,-.8,.6];pad.buttons[7].pressed=true;__tennis.pollPad()')
+    before=js('({x:__tennis.match.you.x,z:__tennis.match.you.z})')
+    advance(.15,'__tennis.buildInput(1/120)')
+    assert js('__tennis.match.you.x')>before['x'] and js('__tennis.match.you.z')<before['z']
+    assert js('__tennis.match.aim.x')<0 and js('__tennis.match.you.stamina')<1
+    js('pad.buttons[9].pressed=true;__tennis.pollPad()');assert js('__tennis.match.state')=='paused'
+    js('pad.connected=false;__tennis.pollPad()');assert 'DISCONNECTED' in page.locator('#gamepadStatus').inner_text()
+    # Settings pause/resume and assistance changes.
+    js('__tennis.match.start()')
+    page.locator('#settingsButton').click();assert js('__tennis.match.state')=='paused'
+    page.locator('#assist').fill('20');assert js('__tennis.match.assist')==.2
+    page.locator('#difficulty').select_option('hard');assert js('__tennis.match.difficulty')=='hard'
+    page.locator('#closeSettings').click();assert js('__tennis.match.state')=='serve'
+    page.locator('#sound').click();assert js('!__tennis.sound.enabled && __tennis.sound.master.gain.value===0')
+    page.locator('#sound').click();assert js('__tennis.sound.enabled')
+    # Touch-sized landscape layout and actual pointer hold/release.
+    page.set_viewport_size({'width':844,'height':390});js('__tennis.match.start();__tennis.refresh()')
+    button=page.locator('[data-shot="slice"]');r=button.bounding_box()
+    page.mouse.move(r['x']+r['width']/2,r['y']+r['height']/2);page.mouse.down();advance(.6)
+    assert js('__tennis.match.shot.type')=='slice'
+    page.mouse.up();assert js('__tennis.match.state')=='toss'
+    js('__tennis.match.start();__tennis.refresh()')
+    stick=page.locator('#joystick').bounding_box();x=stick['x']+stick['width']/2;y=stick['y']+stick['height']/2
+    before=js('__tennis.match.you.x');page.mouse.move(x,y);page.mouse.down();page.mouse.move(x+25,y-10);advance(.2,'__tennis.buildInput(1/120)');page.mouse.up()
+    assert js('__tennis.match.you.x')>before
     assert js('document.documentElement.scrollWidth<=innerWidth')
-    # Muting updates the master gain; enabling resumes sound.
-    page.locator('#sound').click();assert js('!sound && master.gain.value===0')
-    page.locator('#sound').click();assert js('sound && master.gain.value>0')
-    js('you=6;point(true)');assert 'Your court' in page.locator('#title').inner_text()
-    page.get_by_role('button',name='Play again').click();assert js('you===0 && ai===0')
+    page.screenshot(path='/workspace/tennis-mobile-landscape.png')
+    page.set_viewport_size({'width':390,'height':844});page.wait_for_timeout(150);js('__tennis.refresh()')
+    assert js('document.documentElement.scrollWidth<=innerWidth')
+    # Win overlay and restart integrate engine, HUD, camera and controls.
+    js('__tennis.match.points={you:20,ai:18};__tennis.match.state="rally";__tennis.match.score("you","WINNER")')
+    assert page.locator('#overlay').is_visible()
+    assert 'Your court' in page.locator('#overlay h1').inner_text()
+    page.get_by_role('button',name='Play again').click();assert js('__tennis.match.points.you')==0
+    page.set_viewport_size({'width':1440,'height':900});page.wait_for_timeout(150);js('__tennis.refresh()')
+    page.screenshot(path='/workspace/tennis-3d-final.png')
     assert not errors,errors
-    print('PASS: manual timing/no auto-hit, shot power/aim/types, capped assist, net/out scoring, gamepad hold/release/aim/pause, mobile buttons, audio activation/mute, win/restart.')
-    page.set_viewport_size({'width':1440,'height':1200})
-    js('beginShot("topspin","test");update(.55);draw(0)')
-    page.screenshot(path='/workspace/tennis-manual.png',full_page=True)
+    print('PASS: WebGL rendered scene, 2-axis keyboard/gamepad/joystick, shot charge/release and toss, audio activation/mute, pause, settings, mobile/portrait layout, match win/restart. No browser errors.')
     browser.close()

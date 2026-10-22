@@ -1,45 +1,63 @@
-# Baseline Tennis
+# Baseline — Cross Court
 
-A standalone browser tennis game with animated players, a faded blue court, synthesized court sounds, and an AI opponent. No build or external runtime dependencies.
+An original 3D browser tennis game with animated players, a faded blue hard court, a fenced club setting, and a first-to-21 match. Live: https://tennis-legon.pages.dev
 
-Open `index.html` in Chrome, Edge, or Firefox. Alternatively, run `python -m http.server 8000` from this directory and open the server in your browser.
+## Run locally
 
-## Manual shots with position assistance
+From this checkout, run `python -m http.server 8000`, then open the local server in a WebGL-capable browser. ES modules need an HTTP server: double-clicking `index.html` as a file will not work. No build or package installation is required. Three.js 0.180.0 and its MIT license are included in `vendor/`; the game makes no CDN requests.
 
-Move into reach, hold a shot button to prepare and charge, aim, then release just before the ball reaches your player. Waiting without a shot, holding through contact, or releasing too early loses the return. The on-court prompt shows the contact window; the power meter turns orange when overcharged. Poor timing and aggressive flat shots increase net/out risk.
+The controls panel explains every input. Landscape orientation or fullscreen gives the clearest view on mobile. WebGL and browser hardware acceleration must be available.
 
-- **Move:** arrows or A/D; Shift to sprint. Sprint drains stamina, which recovers when resting.
-- **Aim:** Q/E; the target ring marks your intended placement. Pointer users move the pointer while holding a shot to aim.
-- **Shots:** hold/release Space for topspin, X for flat, C for slice, V for lob. The same controls serve between points.
-- **Pause:** P.
-- **PS5 / DualSense:** left stick or D-pad moves; right stick aims; ✕ Cross = topspin, □ Square = flat, ○ Circle = slice, △ Triangle = lob; R2 sprints; Options pauses. Hold a shot button to charge, then release near contact. Press ✕ on the welcome screen to enter. Connect via USB or Bluetooth.
-- **Xbox / other standard gamepad:** left stick or D-pad moves; right stick aims; A = topspin, X = flat, B = slice, Y = lob; RT sprints; Start pauses. Hold/release shot buttons just like keyboard controls. Press A once on the welcome screen to enter the court.
-- **Touch:** drag on the court to move. Hold/release the shot buttons below it; use another finger on the court to aim while charging. Holding/releasing directly on the court also plays topspin.
+## Controls
 
-Position assistance defaults to 40% and can be reduced to zero. This is a limited correction toward a nearby incoming ball, capped at 0.09 court units. It never chases a distant ball or swings automatically. The number is an alignment setting, not a measured AI/human gameplay ratio or a claim about commercial tennis games.
+| Action | PS5 / DualSense | Keyboard |
+| --- | --- | --- |
+| Move across and along court | Left stick / D-pad | Arrows / WASD |
+| Aim across court / set depth | Right stick | Q/E left/right; Z/R shorter/deeper |
+| Topspin / serve | Hold/release ✕ Cross | Hold/release Space |
+| Flat shot | Hold/release □ Square | Hold/release X |
+| Slice | Hold/release ○ Circle | Hold/release C |
+| Lob | Hold/release △ Triangle | Hold/release V |
+| Sprint | R2 | Shift |
+| Pause | Options | P / Escape |
 
-The opponent has difficulty-dependent movement speed, reaction delay, and estimation error, and tries to find open court. First to seven points wins. This is an arcade tennis game, not a full tennis rules or spin-physics simulation.
+Connect the controller by USB or Bluetooth and press ✕ on the welcome screen. Standard Xbox button positions map to A, X, B, Y respectively. A physical DualSense has not been tested in this cloud environment; browser tests use standard-mapped simulated input.
 
-## Sound
+On touchscreens, the left joystick moves. Hold a shot button on the right and drag it horizontally to aim, vertically to adjust depth, then release. Mouse users can click their half of the court to move, click the far half to aim, and use the shot buttons or keyboard to strike.
 
-Sound starts after a user interaction and is enabled by default. Original Web Audio effects include racket impacts, ball bounces, foot scuffs, swing noise, net impacts, and crowd applause for points and wins. Use the Sound button to mute. No sound files or downloads are needed.
+## Match and shots
 
-## Browser checks
+Move into reach, hold a shot to prepare/charge, then release close to contact. Shots are never automatic for the human player. Overcharging, poor timing, and aggressive placement reduce accuracy. Shot types change flight time and bounce restitution. Sprint drains stamina; it recovers when resting.
 
-With Python, Playwright, and Chromium installed, run:
+Position assistance defaults to 40% and can be reduced to zero in Settings. It makes small nearby alignment corrections only while preparing a return. It is not a measured AI/human gameplay ratio.
+
+The ball has three-dimensional position/velocity, gravity, a first-bounce landing marker, and net collision. Serves have a visible toss and must land diagonally in the service box. Let a serve bounce before returning it. First-bounce out balls and missed second bounces lose the point. In this exhibition mode a service fault loses the point; second serves, lets, standard tennis games/sets and complete professional spin physics are not implemented.
+
+First to 21, win by two. Service alternates every two points, then every point after 20–20. Change ends every five points; the camera follows your new end so controls remain camera-relative. Brief camera close-ups show the point winner. The opponent has difficulty-dependent movement, reaction delay, and placement estimates, and chooses among shot types.
+
+## Visual reference
+
+The user supplied a Cross Court Tennis 3 gameplay recording. Broad samples across the 12½-minute recording and a denser 100–112-second rally sequence informed the elevated full-court camera, compact score overlay, two-axis movement, service poses, fenced blue court, touch joystick, point camera cuts and play-to-21 flow. The models, scene, interface, code and synthesized sound are original. This is not an exact reproduction of the commercial game's assets, animation system, physics or hidden assistance rules.
+
+## Audio
+
+Original Web Audio effects provide racket impacts, ball bounces, foot scuffs, swing noise, net contact and applause. Sound starts after interaction. Use the on-court mute button or the Settings volume slider. No recordings or third-party sound assets are used.
+
+## Validation
 
 ```sh
+node tests/physics.mjs
 python tests/gameplay.py
 ```
 
-Checks cover manual shot requirements, timing, shot selection, power/aim, bounded assistance, net/out scoring, gamepad hold/release/aim/pause, mobile shot buttons, Web Audio activation/mute, and match restart. Gamepad checks use simulated input; physical controller behavior depends on browser mapping.
+Physics checks require Node only. Browser checks require Python, Playwright and Chromium. They exercise legal serves, manual contact, two-axis movement, stamina, net/out scoring, service rotation/changeovers, win-by-two, distinct shot trajectories, actual WebGL rendering, gamepad mapping, mobile joystick/shot buttons, audio, pause, settings and restart. Physical controller testing and a mobile-device performance test remain separate.
 
 ## Deployment
 
-The game is deployed to Cloudflare Pages at https://tennis-legon.pages.dev. To deploy an update, stage **only `index.html`** in an asset directory and use:
+Stage `index.html`, `style.css`, `game.js`, `engine.mjs`, `audio.mjs`, and the entire `vendor/` folder in an asset directory. Do not deploy tests, the repository metadata or the reference video.
 
 ```sh
 npx wrangler@4 pages deploy /path/to/assets --project-name tennis-legon --branch main
 ```
 
-Cloudflare credentials must be provided securely through the environment. GitHub pushes alone do not trigger deployment for this directly uploaded Pages project.
+Cloudflare credentials are supplied through the environment. This Pages project uses direct uploads; a GitHub push alone does not deploy it.
