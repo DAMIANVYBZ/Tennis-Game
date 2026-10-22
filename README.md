@@ -12,7 +12,8 @@ Move into reach, hold a shot button to prepare and charge, aim, then release jus
 - **Aim:** Q/E; the target ring marks your intended placement. Pointer users move the pointer while holding a shot to aim.
 - **Shots:** hold/release Space for topspin, X for flat, C for slice, V for lob. The same controls serve between points.
 - **Pause:** P.
-- **Gamepad:** left stick or D-pad moves; right stick aims; A = topspin, X = flat, B = slice, Y = lob; RT sprints; Start pauses. Hold/release shot buttons just like keyboard controls. Press A once on the welcome screen to enter the court.
+- **PS5 / DualSense:** left stick or D-pad moves; right stick aims; ✕ Cross = topspin, □ Square = flat, ○ Circle = slice, △ Triangle = lob; R2 sprints; Options pauses. Hold a shot button to charge, then release near contact. Press ✕ on the welcome screen to enter. Connect via USB or Bluetooth.
+- **Xbox / other standard gamepad:** left stick or D-pad moves; right stick aims; A = topspin, X = flat, B = slice, Y = lob; RT sprints; Start pauses. Hold/release shot buttons just like keyboard controls. Press A once on the welcome screen to enter the court.
 - **Touch:** drag on the court to move. Hold/release the shot buttons below it; use another finger on the court to aim while charging. Holding/releasing directly on the court also plays topspin.
 
 Position assistance defaults to 40% and can be reduced to zero. This is a limited correction toward a nearby incoming ball, capped at 0.09 court units. It never chases a distant ball or swings automatically. The number is an alignment setting, not a measured AI/human gameplay ratio or a claim about commercial tennis games.
