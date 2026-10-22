@@ -17,7 +17,9 @@ with sync_playwright() as p:
     page.route('http://baseline.test/**',asset)
     page.goto('http://baseline.test/')
     page.wait_for_function('!!window.__tennis',timeout=60000)
-    page.get_by_role('button',name='Step onto court').click()
+    page.get_by_role('button',name='ENTER THE CLUB').click()
+    page.get_by_role('button',name='OPEN ASSET GALLERY').click()
+    page.locator('#enterCourt').click()
     page.wait_for_function('__tennis.sound.sampleState==="ready"')
     page.wait_for_function('__tennis.renderer.info.render.triangles>10000')
     page.evaluate('window.requestAnimationFrame=()=>0')
@@ -105,6 +107,7 @@ with sync_playwright() as p:
     page.locator('#sound').click();assert js('__tennis.sound.enabled')
     # Touch-sized landscape layout and actual pointer hold/release.
     page.set_viewport_size({'width':844,'height':390});js('__tennis.match.start();__tennis.refresh()')
+    js('__tennis.lobby.setControl("touch")')
     button=page.locator('[data-shot="slice"]');r=button.bounding_box()
     page.mouse.move(r['x']+r['width']/2,r['y']+r['height']/2);page.mouse.down();advance(.6)
     assert js('__tennis.match.shot.type')=='slice'

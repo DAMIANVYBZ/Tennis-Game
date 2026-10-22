@@ -66,3 +66,17 @@ npx wrangler@4 pages deploy /path/to/assets --project-name tennis-legon --branch
 ```
 
 Cloudflare credentials are supplied through the environment. This Pages project uses direct uploads; a GitHub push alone does not deploy it.
+
+### Club arrival, controls and equipment
+
+Every visit opens the club landing page. Enter the club to choose keyboard, phone/touch or PS5 prompts and match settings, then open the owned-asset gallery to pack equipment and enter the court. A face-button press or Space cannot skip arrival. Club / Kit returns from a match; browser Back also returns through the preparation screens. Control layout can be changed during a paused match in Settings. Other input devices remain usable so connecting a controller never traps a phone or keyboard user.
+
+Touch has a movement joystick, four named hold/drag/release shot buttons and a hold-to-sprint RUN button. Keyboard displays Space/X/C/V, movement and aiming keys. PS5 displays Cross/Square/Circle/Triangle, stick guidance and R2 sprint. Settings, ownership and packed equipment persist under `baseline-club-v1` in browser local storage, with a visible session-only notice when saving fails.
+
+The five-piece starter kit contains a racket, terracotta outfit, hard-court shoes, filled water bottle and headband. The gallery separates My equipment from the Club shop; unowned items cannot be equipped. Local club credits start at 200. A completed match awards 50 for winning or 20 for finishing. This is a local game economy, **not real-money purchasing, account ownership or cross-device inventory**. A purchase debits credits once; optional items can be unpacked. Clothing, shoe/racket colors, cap/headband and wristbands change on the player; equipped bottles, towel and bag appear courtside. Accessories are cosmetic and do not grant gameplay advantages.
+
+Equipment research: [USTA gear guidance](https://www.usta.com/en/home/improve/gear-up.html), [hard-court footwear](https://www.usta.com/en/home/improve/gear-up/national/i-mostly-play-on-hard-courts--what-should-i-look-for-in-a-shoe.html), and [starter racket advice](https://www.usta.com/en/home/improve/gear-up/national/first-time-players--guide--how-much-to-spend-on-a-racquet-.html). The footwear guidance recommends cushioning, stability/support and sturdy outsoles for hard courts. Racket and accessory selections here are original cosmetic game items.
+
+**Character import remains blocked:** both user-supplied FBX attachments exceed the executor's 32 MiB transfer limit. Neither could be downloaded, inspected, converted or integrated. File order is explicitly **`character.fbx` = female**, **`character (1).fbx` = male**; preserve this mapping when smaller ZIP files or GLB exports are supplied. The current articulated players are retained until then; this change does not claim to install the supplied rigs.
+
+Additional checks: `node tests/club.mjs` validates inventory transactions and saved state; `python tests/club.py` exercises the landing/settings/gallery/court flow, input layouts, purchases, visible equipped headwear, reload persistence, browser navigation, desktop and mobile layouts with Chromium. Run existing physics/service and gameplay checks as well.
