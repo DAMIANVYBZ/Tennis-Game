@@ -10,12 +10,12 @@ export function landingIsIn(ball,x,z){
 export const SHOTS={topspin:{flight:1.18,bounce:.76,spin:.18},flat:{flight:1.00,bounce:.69,spin:0},slice:{flight:1.35,bounce:.52,spin:-.12},lob:{flight:1.95,bounce:.72,spin:0}};
 export const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 export class Match{
- constructor(emit=()=>{},random=Math.random){this.emit=emit;this.random=random;this.assist=.4;this.difficulty='normal';this.reset();this.state='menu'}
- reset(){this.time=0;this.points={you:0,ai:0};this.rally=0;this.best=0;this.server='you';this.serveSide=1;this.end=0;this.aim={x:0,depth:.72};this.you={x:1.2,z:11.2,stamina:1,swing:0,step:0,motion:0,side:1};this.ai={x:-1.2,z:-10.6,stamina:1,swing:0,step:0,motion:0,side:1};this.ball={x:1.2,y:1,z:11.2,vx:0,vy:0,vz:0,alive:false,bounces:0,last:'you'};this.shot=null;this.pending=null;this.timer=0;this.lastStep=0;this.aiClock=0;this.aiTarget={x:0,z:-10.5};this.reason='';this.quality='';this.startPoint()}
+ constructor(emit=()=>{},random=Math.random){this.emit=emit;this.random=random;this.assist=.4;this.shotTiming='manual';this.difficulty='normal';this.reset();this.state='menu'}
+ reset(){this.time=0;this.points={you:0,ai:0};this.rally=0;this.best=0;this.server='you';this.serveSide=1;this.end=0;this.aim={x:0,depth:.72};this.you={x:1.2,z:11.2,stamina:1,swing:0,step:0,motion:0,side:1};this.ai={x:-1.2,z:-10.6,stamina:1,swing:0,step:0,motion:0,side:1};this.ball={x:1.2,y:1,z:11.2,vx:0,vy:0,vz:0,alive:false,bounces:0,last:'you'};this.shot=null;this.pending=null;this.selectedShot={type:'topspin',power:.55};this.timer=0;this.lastStep=0;this.aiClock=0;this.aiTarget={x:0,z:-10.5};this.reason='';this.quality='';this.startPoint()}
  start(){this.reset();this.emit('start')}
  startPoint(secondServe=false){this.feet={you:{vx:0,vz:0,stepAt:-1,slideAt:-1},ai:{vx:0,vz:0,stepAt:-1,slideAt:-1}};this.serveAttempt=secondServe?2:1;const total=this.points.you+this.points.ai;this.server=(total<40?Math.floor(total/2)%2:total%2)?'ai':'you';this.serveSide=total%2?-1:1;this.end=Math.floor(total/5)%2;this.you.x=this.server==='you'?this.serveSide*1.3:-this.serveSide*.8;this.you.z=this.server==='you'?12.1:10.6;this.ai.x=this.server==='ai'?-this.serveSide*1.3:this.serveSide*.8;this.ai.z=this.server==='ai'?-12.1:-10.6;this.you.stamina=Math.min(1,this.you.stamina+.25);this.state='serve';this.timer=1.25;this.rally=0;this.reason='';this.quality=this.server==='you'?(secondServe?'SECOND SERVE':'FIRST SERVE'):'RECEIVE';this.shot=null;this.pending=null;this.aim={x:0,depth:.72};this.ball={x:this[this.server].x,y:1,z:this[this.server].z,vx:0,vy:0,vz:0,alive:false,bounces:0,last:this.server};this.emit('ready')}
- prepare(type,source='input'){if(!SHOTS[type]||this.shot||this.pending||!(['rally','serve'].includes(this.state))||(this.state==='serve'&&this.server!=='you'))return false;this.shot={type,source,time:this.time};this.quality='PREPARING';return true}
- release(source='input'){if(!this.shot||this.shot.source!==source)return false;const shot=this.shot;this.shot=null;this.pending={type:shot.type,power:clamp((this.time-shot.time)/.85,.15,1),over:Math.max(0,this.time-shot.time-1.15),at:this.time,aim:this.aim.x,depth:this.aim.depth};if(this.state==='serve'){this.state='toss';this.timer=.68;this.tossPower=this.pending;this.pending=null;this.quality='SERVE TOSS';this.emit('toss')}else{this.you.swing=.38;this.quality='SWING';this.emit('swing')}return true}
+ prepare(type,source='input'){if(!SHOTS[type]||this.shot||(this.pending&&this.shotTiming!=='auto')||!(['rally','serve'].includes(this.state))||(this.state==='serve'&&this.server!=='you'))return false;if(this.shotTiming==='auto')this.pending=null;this.shot={type,source,time:this.time};this.quality='PREPARING';return true}
+ release(source='input'){if(!this.shot||this.shot.source!==source)return false;const shot=this.shot;this.shot=null;this.pending={type:shot.type,power:clamp((this.time-shot.time)/.85,.15,1),over:Math.max(0,this.time-shot.time-1.15),at:this.time,aim:this.aim.x,depth:this.aim.depth};if(this.state==='serve'){this.state='toss';this.timer=.68;this.tossPower=this.pending;this.pending=null;this.quality='SERVE TOSS';this.emit('toss')}else if(this.shotTiming==='auto'){this.selectedShot={type:this.pending.type,power:this.pending.power};this.pending.over=0;this.quality='SHOT READY'}else{this.you.swing=.38;this.quality='SWING';this.emit('swing')}return true}
  cancel(){this.shot=null;this.pending=null}
  pause(){if(this.state==='paused'){this.state=this.pausedState;this.emit('resume')}else if(['serve','rally','toss','point','fault'].includes(this.state)){this.pausedState=this.state;this.state='paused';this.cancel();this.emit('pause')}}
  score(winner,reason){if(!['rally','toss','serve'].includes(this.state))return;this.points[winner]++;this.lastPointWinner=winner;this.reason=reason;this.ball.alive=false;this.cancel();this.state='point';this.timer=2.3;this.quality=reason;this.emit('point',{winner,reason});const loser=winner==='you'?'ai':'you';if(this.points[winner]>=21&&this.points[winner]-this.points[loser]>=2){this.state='over';this.winner=winner;this.emit('win',{winner})}}
@@ -33,6 +33,15 @@ export class Match{
  return {...origin,vx:(tx-origin.x)/flight,vz:(tz-origin.z)/flight,vy:(.5*9.81*flight*flight+.075-origin.y)/flight,alive:true,bounces:0,last:who,type:shot.type,serve,serviceBoxX:-Math.sign(p.x||1),spin:spec.spin,bounce:spec.bounce,landing:{x:tx,z:tz},firstFlight:flight};
  }
  launch(who,shot,serve=false,quality=1){const p=this[who];this.ball=this.trajectory(who,shot,serve,quality);p.swing=1;p.side=Math.sign(this.ball.vx)||1;this.aiClock=.05;this.aiAimError=(this.random()-.5)*{easy:1.4,normal:.7,hard:.25}[this.difficulty];this.rally++;this.best=Math.max(this.best,this.rally);this.emit('hit',{who,power:shot.power,type:shot.type,quality,x:this.ball.x,z:this.ball.z});
+ }
+ autoHitYou(){
+ const b=this.ball,p=this.you;
+ // Timing assistance never moves the player or reaches across the net.
+ if(!b.alive||b.last!=='ai'||b.z<.7||Math.hypot(b.x-p.x,b.z-p.z)>1.9||b.y<.32||b.y>2.6||(b.serve&&b.bounces===0))return false;
+ const shot=this.shot?{type:this.shot.type,power:clamp((this.time-this.shot.time)/.85,.15,1)}:(this.pending||this.selectedShot);
+ const planned={type:shot.type,power:shot.power,over:0,aim:this.aim.x,depth:this.aim.depth};
+ this.selectedShot={type:planned.type,power:planned.power};this.shot=null;this.pending=null;this.quality='ASSISTED CONTACT';
+ this.launch('you',planned,false,1);return true;
  }
  hitYou(){const b=this.ball,p=this.you;if(!this.pending||b.last==='you'||!b.alive)return false;const age=this.time-this.pending.at;if(age>.25){this.pending=null;this.quality='TOO EARLY';return false}
  const distance=Math.hypot(b.x-p.x,b.z-p.z);if(distance>1.65||b.y<.32||b.y>2.6||(b.serve&&b.bounces===0))return false;
@@ -76,11 +85,11 @@ export class Match{
  if(b.bounces>=2){this.score(b.last,'DOUBLE BOUNCE');return}
  b.vy=-b.vy*b.bounce;b.vz*=b.type==='slice'?.89:.94;b.vx*=.94;b.serve=false;
  }
- if((this.shot||this.pending)&&b.last==='ai'&&b.vz>0&&b.z>3&&Math.abs(b.landing.x-p.x)<1.8){p.x+=clamp(b.landing.x-p.x,-1.8,1.8)*this.assist*dt*2.2}
- p.x=clamp(p.x,-6.3,6.3);this.hitYou();
+ if(this.shotTiming!=='auto'&&(this.shot||this.pending)&&b.last==='ai'&&b.vz>0&&b.z>3&&Math.abs(b.landing.x-p.x)<1.8){p.x+=clamp(b.landing.x-p.x,-1.8,1.8)*this.assist*dt*2.2}
+ p.x=clamp(p.x,-6.3,6.3);if(this.shotTiming==='auto')this.autoHitYou();else this.hitYou();
  if(b.last==='you'&&Math.hypot(b.x-this.ai.x,b.z-this.ai.z)<cfg.reach&&b.y>.35&&b.y<2.6&&(!b.serve||b.bounces>0)&&b.z<-.7){
  const open=this.you.x>0?-1:1;const choice=this.random();let type=choice<.13?'lob':choice<.31?'slice':choice<.57?'flat':'topspin';const aim=clamp(open*(.60+this.random()*.28)+(this.random()-.5)*.2,-.95,.95);this.launch('ai',{type,power:.5+this.random()*.4,aim,depth:.65+this.random()*.3,over:0},false,{easy:.65,normal:.85,hard:.95}[this.difficulty]);this.quality='OPPONENT RETURN';}
- if(this.pending&&this.time-this.pending.at>.25){this.pending=null;this.quality='TOO EARLY'}
+ if(this.shotTiming!=='auto'&&this.pending&&this.time-this.pending.at>.25){this.pending=null;this.quality='TOO EARLY'}
  if(b.y< -1||Math.abs(b.z)>19||Math.abs(b.x)>14){if(b.serve){this.serviceFault('SERVICE FAULT');return}this.score(b.bounces>0?b.last:(b.last==='you'?'ai':'you'),b.bounces>0?'WINNER':'OUT');return}
  }
  p.motion=clamp(Math.hypot(p.x-oldX,p.z-oldZ)/dt/6,0,1);p.step+=dt*(3+p.motion*12);this.footSound('you',(p.x-oldX)/dt,(p.z-oldZ)/dt);
