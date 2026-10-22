@@ -1,5 +1,5 @@
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-export const OPPONENT_LEVELS={easy:{speed:4.5,delay:.30,reach:1.4,error:.36},normal:{speed:5.9,delay:.19,reach:1.5,error:.20},hard:{speed:7.2,delay:.11,reach:1.65,error:.09}};
+export const OPPONENT_LEVELS={easy:{speed:3.6,delay:.42,reach:1.15,error:.50},normal:{speed:4.9,delay:.27,reach:1.35,error:.30},hard:{speed:6.4,delay:.16,reach:1.5,error:.14}};
 export function opponentShot(ai,you,ball,difficulty,random=Math.random){
  const level=OPPONENT_LEVELS[difficulty],stretch=Math.hypot(ball.x-ai.x,ball.z-ai.z),pressure=clamp((stretch-.7)/1.2+(1-ai.stamina)*.5,0,1),open=you.x>=0?-1:1,choice=random();
  let type,aim,depth,power,tactic;

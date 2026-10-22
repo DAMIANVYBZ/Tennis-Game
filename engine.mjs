@@ -34,7 +34,7 @@ export class Match{
  if(!serve&&shot.type==='flat'&&quality<.35&&power>.8)flight*=.72;
  return {...origin,vx:(tx-origin.x)/flight,vz:(tz-origin.z)/flight,vy:(.5*9.81*flight*flight+.075-origin.y)/flight,alive:true,bounces:0,last:who,type:shot.type,serve,serviceBoxX:-Math.sign(p.x||1),spin:spec.spin,bounce:spec.bounce,landing:{x:tx,z:tz},firstFlight:flight};
  }
- launch(who,shot,serve=false,quality=1){const p=this[who];this.ball=this.trajectory(who,shot,serve,quality);p.contact={x:this.ball.x,y:this.ball.y,z:this.ball.z,serve};p.swing=1;p.side=Math.sign((this.ball.x-p.x)*(who==='you'?-1:1))||1;this.aiClock=.05;this.aiAimError=(this.random()-.5)*{easy:1.4,normal:.7,hard:.25}[this.difficulty];this.rally++;this.best=Math.max(this.best,this.rally);this.emit('hit',{who,power:shot.power,type:shot.type,quality,x:this.ball.x,z:this.ball.z});
+ launch(who,shot,serve=false,quality=1){const p=this[who];this.ball=this.trajectory(who,shot,serve,quality);p.contact={x:this.ball.x,y:this.ball.y,z:this.ball.z,serve};p.swing=1;p.side=Math.sign((this.ball.x-p.x)*(who==='you'?-1:1))||1;this.aiClock=who==='you'?OPPONENT_LEVELS[this.difficulty].delay:.05;this.aiAimError=(this.random()-.5)*{easy:2.2,normal:1.3,hard:.55}[this.difficulty];this.rally++;this.best=Math.max(this.best,this.rally);this.emit('hit',{who,power:shot.power,type:shot.type,quality,x:this.ball.x,z:this.ball.z});
  }
  autoHitYou(){
  const b=this.ball,p=this.you;

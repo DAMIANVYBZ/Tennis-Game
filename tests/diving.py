@@ -22,7 +22,7 @@ with sync_playwright() as p:
  page.evaluate('__tennis.refresh()');assert page.evaluate('__tennis.match.you.dive.phase') in ['down','rising'];page.screenshot(path='/workspace/tennis-dive-grounded.png')
  # Standard mapped DualSense L1 starts a dive with the left stick direction.
  setup();page.evaluate("window.pad={index:0,connected:true,axes:[-1,0,0,0],buttons:Array.from({length:17},()=>({pressed:false}))};pad.buttons[4].pressed=true;Object.defineProperty(navigator,'getGamepads',{value:()=>[pad]});__tennis.pollPad();__tennis.match.tick(.01,__tennis.buildInput(.01))");assert page.evaluate('__tennis.match.you.dive.dx')<0
- page.evaluate('pad.connected=false;__tennis.pollPad();__tennis.lobby.setControl("touch")');setup();page.locator('#touchDive').dispatch_event('click');page.evaluate('__tennis.match.tick(.01,__tennis.buildInput(.01))');assert page.evaluate('!!__tennis.match.you.dive')
+ page.evaluate('pad.connected=false;__tennis.pollPad();__tennis.lobby.setControl("touch");__tennis.lobby.updateSettings({shotTiming:"manual"})');setup();page.locator('#touchDive').dispatch_event('click');page.evaluate('__tennis.match.tick(.01,__tennis.buildInput(.01))');assert page.evaluate('!!__tennis.match.you.dive')
  # Portrait view is behind the player rather than overhead, and the touch dive button stays usable.
  page.set_viewport_size({'width':390,'height':844});page.wait_for_timeout(150);page.evaluate('__tennis.match.start();__tennis.refresh()');assert page.locator('#touchDive').is_visible()
  camera=page.evaluate('({y:__tennis.camera.position.y,z:__tennis.camera.position.z})');assert camera['y']==17 and camera['z']==34,camera
