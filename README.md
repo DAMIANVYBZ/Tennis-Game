@@ -21,6 +21,7 @@ The controls panel explains every input. Landscape orientation or fullscreen giv
 | Slice | Hold/release ○ Circle | Hold/release C |
 | Lob | Hold/release △ Triangle | Hold/release V |
 | Sprint | R2 | Shift |
+| Dive toward movement | L1 | B |
 | Pause | Options | P / Escape |
 
 Connect the controller by USB or Bluetooth and press ✕ on the welcome screen. Standard Xbox button positions map to A, X, B, Y respectively. A physical DualSense has not been tested in this cloud environment; browser tests use standard-mapped simulated input.
@@ -124,3 +125,8 @@ The opponent varies placement according to court position: open-court shots, occ
 Open sessions check `version.json` after startup, every minute while visible, when returning to the tab and when reconnecting. A different release shows **Update available** with **Refresh & update** and **Later**. The popup does not pause or reload a match automatically. Later hides that release for the current tab; a subsequent release can notify again. Refresh saves the club profile and preserves the selected court URL, then reloads with a release-specific query to apply the update. The current match restarts. Offline checks fail silently. Sessions opened before this feature need one manual refresh to acquire the notification code.
 
 Before every deployment, run `python tools/prepare-release.py /tmp/tennis-release-3d`. This hashes the runtime files and generates matching `build-version.mjs` and `version.json`, then stages the static release including `_headers`. Commit the generated version files along with the changes before deploying that directory. Do not update just the server manifest: the client version must match. The Cloudflare headers revalidate HTML/scripts/styles and prevent the manifest from being cached. `python tests/updates.py` verifies detection, dismissal, offline behavior and refresh with saved preferences and court URL preserved.
+
+
+Diving returns are manually triggered with **B**, **L1** on a standard-mapped PS5 controller, or the phone **DIVE** button. Move toward the ball, then dive; without directional input the dive heads toward the incoming ball. A dive advances through flight, landing and getting up. During flight, a return requires the incoming ball to intersect the moving racket contact path in position and height before its second bounce; normal assisted reach is disabled. During landing the player cannot run or hit, and movement returns gradually while rising. Stamina, reversing previous momentum and the effort of the attempt determine recovery time. Holding the button cannot chain dives. Point resets clear recovery; pausing freezes it. The opponent's rally continues normally, so its next placement can exploit a slow recovery.
+
+Portrait phones now use a lower camera from behind the player, with gentle lateral following. The desktop match camera is unchanged; the aerial view is limited to the arrival sequence. Tests: `node tests/diving.mjs`, `python tests/diving.py`, and the existing service, automatic-contact, gameplay, character and arrival checks.

@@ -65,10 +65,10 @@ export class Athlete{
   const end=new THREE.Vector3(),joint=new THREE.Vector3(),from=new THREE.Vector3(),to=new THREE.Vector3(),world=new THREE.Quaternion(),parent=new THREE.Quaternion(),turn=new THREE.Quaternion(),identity=new THREE.Quaternion();
   for(let i=0;i<5;i++)for(const name of ['RightForeArm','RightArm']){const bone=rig.bones[name];rim.getWorldPosition(end);bone.getWorldPosition(joint);from.copy(end).sub(joint);to.copy(target).sub(joint);if(from.lengthSq()<1e-8||to.lengthSq()<1e-8)continue;turn.setFromUnitVectors(from.normalize(),to.normalize()).slerp(identity,1-weight*.8);bone.getWorldQuaternion(world);bone.parent.getWorldQuaternion(parent).invert();bone.quaternion.copy(parent.multiply(turn.multiply(world)));this.root.updateMatrixWorld(true)}
  }
- pose(p,opponent,{time=0,preparing=false,toss=0,reach=null}={}){
-  this.root.position.set(p.x,0,p.z);this.root.rotation.y=Math.atan2(opponent.x-p.x,opponent.z-p.z);const rig=this.current;if(!rig)return;
+ pose(p,opponent,{time=0,preparing=false,toss=0,reach=null,dive=null,diveTarget=null}={}){
+  this.root.position.set(p.x,0,p.z);this.root.rotation.y=Math.atan2(opponent.x-p.x,opponent.z-p.z);const rig=this.current;if(!rig)return;rig.visual.quaternion.identity();
   for(const j of rig.joints.values()){j.bone.quaternion.copy(j.rest);j.bone.position.copy(j.position)}
-  const stride=Math.sin(p.step),run=p.motion||0,swing=p.swing>0?Math.sin((1-p.swing)*Math.PI):0,side=p.side||1;
+  const stride=dive?0:Math.sin(p.step),run=dive?0:p.motion||0,swing=p.swing>0?Math.sin((1-p.swing)*Math.PI):0,side=p.side||1;
   // T-pose arms lower around character-space Z; elbows flex forward around Y.
   this.rotate('LeftArm',-.12-stride*run*.25,0,-1.05+swing*.18);
   this.rotate('RightArm',-.18+stride*run*.25-swing*.6,0,1.02-side*swing*.55);
@@ -89,6 +89,11 @@ export class Athlete{
     rig.visual.position.x=local.x*.12*stretch;rig.visual.position.z=Math.max(-.12,Math.min(.18,local.z*.1*stretch));
     this.root.updateMatrixWorld(true);this.reachRacket(target,weight);
    }
+  }
+  if(dive){const u=dive.phase==='air'?Math.min(1,dive.time/.5):dive.phase==='rising'?Math.min(1,dive.time/dive.rise):0,recover=dive.phase==='rising'?u*u*(3-2*u):0,tilt=dive.phase==='air'?1.43*Math.sin(u*Math.PI/2):1.43*(1-recover),dir=new THREE.Vector3(dive.dx,0,dive.dz).applyQuaternion(this.root.quaternion.clone().invert()),axis=new THREE.Vector3(dir.z,0,-dir.x),pivot=new THREE.Vector3(0,.9,0);
+   rig.visual.quaternion.setFromAxisAngle(axis,tilt);const height=dive.phase==='air'?.9+Math.sin(u*Math.PI)*.28-u*.66:Math.max(.24+.66*recover,.9*Math.cos(tilt)+.015);rig.visual.position.copy(pivot).applyQuaternion(rig.visual.quaternion).multiplyScalar(-1);rig.visual.position.y+=height;
+   if(dive.phase==='air'){this.rotate('LeftUpLeg',-.2);this.rotate('RightUpLeg',-.15);this.rotate('LeftLeg',.45);this.rotate('RightLeg',.35)}this.rotate('LeftArm',-.6,0,-.2);this.rotate('LeftForeArm',0,-.4,0);if(dive.phase!=='air'){this.rotate('LeftUpLeg',-.45*(1-recover));this.rotate('RightUpLeg',-.25*(1-recover));this.rotate('LeftLeg',.8*(1-recover));this.rotate('RightLeg',.65*(1-recover))}
+   this.root.updateMatrixWorld(true);if(dive.phase==='air'&&diveTarget)this.reachRacket(diveTarget,1);
   }
   this.root.updateMatrixWorld(true);
  }
