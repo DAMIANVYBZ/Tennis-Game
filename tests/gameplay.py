@@ -24,6 +24,26 @@ with sync_playwright() as p:
     def js(code):return page.evaluate(code)
     def advance(seconds,input='{}'):js(f'for(let i=0;i<{int(seconds*120)};i++)__tennis.match.tick(1/120,{input})')
     assert js('__tennis.match.state')=='serve'
+    # The visible face and the racket-ready arms must face the opponent.
+    def facing_check():
+        return js("""() => {
+            __tennis.scene.updateMatrixWorld(true);
+            return ['human-player','club-opponent'].map((name,index) => {
+                const player=__tennis.scene.getObjectByName(name);
+                const opponent=__tennis.scene.getObjectByName(index?'human-player':'club-opponent');
+                const nose=player.getObjectByName('face-direction');
+                const vector=()=>player.position.clone().set(0,0,0);
+                const forward=nose.getWorldPosition(vector()).sub(nose.parent.getWorldPosition(vector()));
+                const toward=opponent.getWorldPosition(vector()).sub(player.getWorldPosition(vector()));
+                forward.y=toward.y=0;
+                return forward.normalize().dot(toward.normalize());
+            });
+        }""")
+    assert all(dot>.9 for dot in facing_check()), 'Players must face each other'
+    js('__tennis.match.end=1')
+    for _ in range(12):js('__tennis.refresh()')
+    assert all(dot>.9 for dot in facing_check()), 'Facing must survive camera changeovers'
+    js('__tennis.match.end=0')
     page.keyboard.down('ArrowUp');input_before=js('__tennis.match.you.z')
     advance(.2,'__tennis.buildInput(1/120)');page.keyboard.up('ArrowUp')
     assert js('__tennis.match.you.z')<input_before
