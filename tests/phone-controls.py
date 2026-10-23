@@ -23,12 +23,12 @@ with sync_playwright() as p:
    for c in boxes[i+1:]:assert a['x']+a['width']<=c['x'] or c['x']+c['width']<=a['x'] or a['y']+a['height']<=c['y'] or c['y']+c['height']<=a['y']
  page.set_viewport_size({'width':844,'height':390});page.evaluate('() => new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))')
  page.evaluate('window.requestAnimationFrame=()=>0');page.wait_for_timeout(100)
- page.evaluate('''() => {const m=__tennis.match;m.state='rally';m.you.x=0;m.you.z=9;m.you.stamina=1;m.ball={x:-2.8,y:1.2,z:9,vx:0,vy:0,vz:0,alive:true,last:'ai',bounces:1,type:'topspin',serve:false,bounce:.7,landing:{x:-2.8,z:9}};m.feet.you.vx=6;m.feet.you.vz=0}''')
+ page.evaluate('''() => {const m=__tennis.match;m.state='rally';m.you.x=0;m.you.z=9;m.you.stamina=1;m.ball={x:-2.8,y:1.4,z:5.4,vx:0,vy:-1,vz:16,alive:true,last:'ai',bounces:1,type:'topspin',serve:false,bounce:.7,landing:{x:-2.8,z:9}};m.feet.you.vx=6;m.feet.you.vz=0}''')
  # Steer the joystick left, without touching sprint or dive.
  joy=page.locator('#joystick').bounding_box();point={'pointerId':7,'clientX':joy['x']+2,'clientY':joy['y']+joy['height']/2}
  page.mouse.move(point['clientX'],point['clientY']);page.mouse.down()
- actions=page.evaluate('__tennis.buildInput(.01)');assert actions['x']<0 and actions['sprint'] and actions['dive'],actions
- page.evaluate('__tennis.match.tick(.01,__tennis.buildInput(.01))');assert page.evaluate('!!__tennis.match.you.dive')
+ actions=page.evaluate('__tennis.buildInput(.01)');assert actions['x']<0 and actions['sprint'],actions
+ page.evaluate('''() => {window.autoDived=false;for(let i=0;i<60&&__tennis.match.ball.last==='ai';i++){__tennis.match.tick(1/60,__tennis.buildInput(1/60));window.autoDived ||=!!__tennis.match.you.dive}}''');assert page.evaluate('window.autoDived');assert page.evaluate('__tennis.match.quality')=='DIVING RETURN'
  page.mouse.up()
  page.evaluate('__tennis.match.start();__tennis.lobby.updateSettings({shotTiming:"manual"})');assert page.locator('#touchSprint').is_visible();assert page.locator('#touchDive').is_visible()
  # Every enlarged shot target still supports charging through pointer input.
