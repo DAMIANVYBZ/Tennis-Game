@@ -11,17 +11,17 @@ with sync_playwright() as p:
   if f.is_dir():f=f/'index.html'
   r.fulfill(body=f.read_bytes(),content_type='text/javascript' if f.suffix in ['.js','.mjs'] else mimetypes.guess_type(str(f))[0] or 'application/octet-stream')
  page.route('http://baseline.test/**',asset);page.goto('http://baseline.test/');page.wait_for_function('window.tennisLoading&&!tennisLoading.active',timeout=120000)
- page.get_by_role('button',name='PLAY INTER-HALL MATCH').tap();page.get_by_role('button',name='Settings',exact=True).tap();assert page.locator('[data-setting="difficulty"] option').all_text_contents()==['Easy','Medium','Hard'];page.locator('[data-setting="difficulty"]').select_option('easy');assert page.evaluate('__tennis.match.difficulty')=='easy';page.get_by_role('button',name='DONE').tap();assert 'AI EASY' in page.locator('.preparation-court').inner_text();page.locator('#enterCourt').tap();page.locator('#skipArrival').tap();page.wait_for_function('!document.body.classList.contains("arriving")')
+ page.get_by_role('button',name='PLAY INTER-HALL MATCH').tap();page.get_by_role('button',name='Settings',exact=True).tap();assert page.locator('[data-setting="difficulty"] option').all_text_contents()==['Easy','Medium','Hard'];page.locator('[data-setting="difficulty"]').select_option('easy');assert page.evaluate('__tennis.match.difficulty')=='easy';page.get_by_role('button',name='DONE').tap();assert 'AI EASY' in page.locator('.preparation-court').inner_text();page.set_viewport_size({'width':844,'height':390});page.locator('#enterCourt').tap();page.locator('#skipArrival').tap();page.wait_for_function('!document.body.classList.contains("arriving")')
  assert page.evaluate('__tennis.lobby.profile.settings.controls')=='touch';assert not page.locator('#touchSprint').is_visible();assert not page.locator('#touchDive').is_visible()
  page.wait_for_timeout(500);page.screenshot(path='/workspace/tennis-large-phone-shot-buttons.png')
- for width,height in [(390,844),(320,568),(844,390)]:
+ for width,height in [(844,390),(740,360),(932,430)]:
   page.set_viewport_size({'width':width,'height':height});page.wait_for_timeout(100)
   boxes=[button.bounding_box() for button in page.locator('[data-shot]').all()]
   assert all(box['width']>=60 and box['height']>=60 for box in boxes),boxes
   assert all(box['x']>=0 and box['x']+box['width']<=width and box['y']>=0 and box['y']+box['height']<=height for box in boxes),boxes
   for i,a in enumerate(boxes):
    for c in boxes[i+1:]:assert a['x']+a['width']<=c['x'] or c['x']+c['width']<=a['x'] or a['y']+a['height']<=c['y'] or c['y']+c['height']<=a['y']
- page.set_viewport_size({'width':390,'height':844});page.evaluate('() => new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))')
+ page.set_viewport_size({'width':844,'height':390});page.evaluate('() => new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))')
  page.evaluate('window.requestAnimationFrame=()=>0');page.wait_for_timeout(100)
  page.evaluate('''() => {const m=__tennis.match;m.state='rally';m.you.x=0;m.you.z=9;m.you.stamina=1;m.ball={x:-2.8,y:1.2,z:9,vx:0,vy:0,vz:0,alive:true,last:'ai',bounces:1,type:'topspin',serve:false,bounce:.7,landing:{x:-2.8,z:9}};m.feet.you.vx=6;m.feet.you.vz=0}''')
  # Steer the joystick left, without touching sprint or dive.

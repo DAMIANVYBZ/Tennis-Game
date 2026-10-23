@@ -38,6 +38,6 @@ with sync_playwright() as p:
  assert not errors,errors
  phone,phone_errors=open_page(browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True))
  phone.get_by_role('button',name='PLAY INTER-HALL MATCH').tap();phone.wait_for_function('!__tennis.music.audio.paused');assert phone.evaluate('document.documentElement.scrollWidth<=innerWidth')
- phone.get_by_role('button',name='OPEN ASSET GALLERY').tap();phone.locator('#enterCourt').tap();assert phone.evaluate('__tennis.music.audio.paused && __tennis.music.gain.gain.value===0');assert not phone_errors,phone_errors
+ phone.get_by_role('button',name='OPEN ASSET GALLERY').tap();phone.set_viewport_size({'width':844,'height':390});phone.locator('#enterCourt').tap();assert phone.evaluate('__tennis.music.audio.paused && __tennis.music.gain.gain.value===0');assert not phone_errors,phone_errors
  print('PASS: gesture-started 40s loop; uninterrupted navigation; music volume and mute; silence throughout play/pause; menu return; hidden-tab suspension; saved choices; playback race; phone touch. No browser errors.')
  browser.close()
