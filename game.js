@@ -10,6 +10,7 @@ import {CourtArrival} from './arrival.mjs';
 import {CourtEnvironment} from './environment.mjs';
 import {getVenue} from './venues.mjs'
 import {reportMatchResult} from './legonrush-bridge.mjs';
+import {activeGamepad} from './gamepad-pick.mjs';
 import {createLobby,CONTROL_COPY,controlCopy} from './lobby.mjs';
 import {CATALOG,opponentHall} from './inventory.mjs';
 import {Athlete,loadCharacters,characterStatus} from './avatars.mjs';
@@ -86,7 +87,7 @@ function keysClear(){touchSprint=false;diveRequested=false;padDive=false;$('touc
 function togglePause(){if(arrival.active)arrival.skip();match.pause();keysClear();$('pause').textContent=match.state==='paused'?'▶':'Ⅱ';$('pause').setAttribute('aria-label',match.state==='paused'?'Resume match':'Pause match');$('court').focus()}
 function prepare(type,source){if(orientation.blocked||!started||lobby?.screen!=='court')return;sound.unlock();if(arrival.active)arrival.skip();if(match.shotTiming!=='auto')pointerTarget=null;if(match.prepare(type,source)){document.querySelector(`[data-shot="${type}"]`)?.classList.add('charging')}}
 function release(source){match.release(source);for(const b of document.querySelectorAll('[data-shot]'))b.classList.remove('charging')}
-function pollPad(){padDive=false;padMove={x:0,z:0};padAim={x:0,y:0};padSprint=false;const pads=navigator.getGamepads?.()||[],pad=Array.from(pads).find(p=>p&&p.connected&&p.index===activePad)||Array.from(pads).find(p=>p&&p.connected);if(!pad){if(activePad!==null){activePad=null;padButtons={};keysClear();if(match.state==='rally'||match.state==='toss')match.pause();$('gamepadStatus').textContent='CONTROLLER DISCONNECTED · KEYBOARD STILL WORKS'}return}
+function pollPad(){padDive=false;padMove={x:0,z:0};padAim={x:0,y:0};padSprint=false;const pads=navigator.getGamepads?.()||[],pad=activeGamepad(Array.from(pads));if(!pad){if(activePad!==null){activePad=null;padButtons={};keysClear();if(match.state==='rally'||match.state==='toss')match.pause();$('gamepadStatus').textContent='CONTROLLER DISCONNECTED · KEYBOARD STILL WORKS'}return}
  if(activePad!==pad.index){activePad=pad.index;padButtons={};$('gamepadStatus').textContent='PS5 / STANDARD GAMEPAD CONNECTED'}const down=i=>!!pad.buttons[i]?.pressed,fresh=i=>down(i)&&!padButtons[i],axis=i=>{const v=pad.axes[i]||0;return Math.abs(v)>.16?(v-Math.sign(v)*.16)/.84:0};padMove={x:axis(0),z:axis(1)};padAim={x:axis(2),y:axis(3)};padSprint=down(7);padDive=down(4);if(down(14))padMove.x=-1;if(down(15))padMove.x=1;if(down(12))padMove.z=-1;if(down(13))padMove.z=1;
  if(lobby?.screen!=='court'){padMove={x:0,z:0};padAim={x:0,y:0};padSprint=false;padButtons=Object.fromEntries([0,1,2,3,9].map(i=>[i,down(i)]));return}
  if(match.state==='paused'&&$('helpPanel').classList.contains('hidden')&&$('settingsPanel').classList.contains('hidden')){const buttons=[$('resumeMatch'),$('quitHome')];if(fresh(12)||fresh(13)){const index=buttons.indexOf(document.activeElement);buttons[index===0?1:0].focus()}if(fresh(0)){if(buttons.includes(document.activeElement))document.activeElement.click();else buttons[0].focus()}if(fresh(1)||fresh(9))togglePause();padButtons=Object.fromEntries([0,1,2,3,9,12,13].map(i=>[i,down(i)]));return}

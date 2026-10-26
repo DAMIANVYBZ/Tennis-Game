@@ -1,5 +1,6 @@
 import {COURTS,SITES,getVenue,requestedVenue} from './venues.mjs';
 import {CATALOG,SLOTS,HALLS,opponentHall,STORAGE_KEY,freshProfile,normalizeProfile,purchase,equip,gearArt} from './inventory.mjs';
+import {activeGamepad} from './gamepad-pick.mjs';
 const $=id=>document.getElementById(id);
 export const CONTROL_COPY={
  keyboard:{title:'Keyboard',move:'WASD / arrows',aim:'Q / E sideways · Z / R depth',shots:['Space','X','C','V'],sprint:'Shift',dive:'B',pause:'P',guide:'Move with WASD or arrows. Q/E aim left/right; Z/R adjust short/deep. Hold a shot key to set power; release to bank it. Dive toward movement with B.'},
@@ -16,7 +17,7 @@ export function createLobby({onSettings,onEquip,onEnter,onLeave,onRetryCharacter
  function apply(){onSettings(profile.settings);onEquip(profile);save()}
  function navigate(next,push=true){screen=next;onNavigate?.(next);document.body.dataset.screen=next;host.hidden=next==='court';if(next==='court'){onEnter();return}onLeave();if(push)history.pushState({club:next},'',`#${next}`);render();host.scrollTop=0;host.querySelector('h1,h2')?.focus()}
  function pollPad(){
-  const pad=Array.from(navigator.getGamepads?.()||[]).find(p=>p?.connected);if(!pad){menuPad={};return}
+  const pad=activeGamepad();if(!pad){menuPad={};return}
   const held={ok:!!pad.buttons[0]?.pressed,back:!!pad.buttons[1]?.pressed,up:!!pad.buttons[12]?.pressed||(pad.axes[1]||0)<-.65,down:!!pad.buttons[13]?.pressed||(pad.axes[1]||0)>.65,left:!!pad.buttons[14]?.pressed||(pad.axes[0]||0)<-.65,right:!!pad.buttons[15]?.pressed||(pad.axes[0]||0)>.65};
   const fresh=key=>held[key]&&!menuPad[key];const controls=[...host.querySelectorAll('button:not(:disabled),select,input')].filter(e=>e.getClientRects().length);let current=document.activeElement,index=controls.indexOf(current);
   const direction=fresh('down')||fresh('right')?1:fresh('up')||fresh('left')?-1:0;
