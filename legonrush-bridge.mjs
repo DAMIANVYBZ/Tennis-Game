@@ -19,3 +19,26 @@ export function reportMatchResult(result) {
   } catch (error) { console.warn('LEGONRUSH bridge (event) failed', error); }
   return payload;
 }
+
+// True when the match runs inside LEGONRUSH (Unreal binds window.ue.legonrush, possibly after load; or ?legonrush=1).
+export function embeddedInLegonrush() {
+  try { return new URLSearchParams(globalThis.location?.search || '').has('legonrush') || !!(globalThis.ue && globalThis.ue.legonrush); }
+  catch { return false; }
+}
+
+// Inside LEGONRUSH the host keeps its own screen clean: hide the in-match hint bar and control legend.
+(function hideHintsWhenEmbedded() {
+  if (typeof document === 'undefined') return;
+  const style = document.createElement('style');
+  style.textContent = 'html.legonrush .court-caption, html.legonrush #controlLegend { display: none !important; }';
+  document.head.appendChild(style);
+  const mark = () => {
+    if (!embeddedInLegonrush()) return false;
+    document.documentElement.classList.add('legonrush');
+    return true;
+  };
+  if (!mark()) {
+    let tries = 0;
+    const timer = setInterval(() => { if (mark() || ++tries > 40) clearInterval(timer); }, 250);
+  }
+})();
