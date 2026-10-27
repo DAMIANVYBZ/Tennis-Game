@@ -26,11 +26,11 @@ export function embeddedInLegonrush() {
   catch { return false; }
 }
 
-// Inside LEGONRUSH the host keeps its own screen clean: hide the in-match hint bar and control legend.
+// Inside LEGONRUSH the host keeps its own screen clean: hide the in-match hint bar, control legend and the power meter that follows the player (the shot panel keeps it).
 (function hideHintsWhenEmbedded() {
   if (typeof document === 'undefined') return;
   const style = document.createElement('style');
-  style.textContent = 'html.legonrush .court-caption, html.legonrush #controlLegend { display: none !important; }';
+  style.textContent = 'html.legonrush .court-caption, html.legonrush #controlLegend, html.legonrush #playerPower { display: none !important; }';
   document.head.appendChild(style);
   const mark = () => {
     if (!embeddedInLegonrush()) return false;
