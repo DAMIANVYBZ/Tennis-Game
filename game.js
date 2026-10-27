@@ -99,7 +99,7 @@ function openCourtAim(){const ai=match.ai,heading=ai.x*.5+(match.aiTarget?.x??ai
  // Opponent in the middle: go cross-court (away from the ball's side, the longest and safest line).
  const side=Math.abs(heading)>.6?-Math.sign(heading):-Math.sign(match.ball.x||match.you.x||1);
  return{aim:side*.85,depth:ai.z>-7?1:Math.max(dragDepth,.8)}}
-function steerOpenCourt(dt,manual){if(!openCourt)return;if(manual||match.state!=='rally'||match.rally!==openCourt.rally){openCourt=null;return}
+function steerOpenCourt(dt,manual){if(!openCourt)return;if(manual||match.state!=='rally'||(match.rally!==openCourt.rally&&match.ball.last==='you')){openCourt=null;return}
  const t=openCourtAim(),k=Math.min(1,dt*6);dragAim+=(t.aim-dragAim)*k;dragDepth+=(t.depth-dragDepth)*k}
 function buildInput(dt){let x=(keys.ArrowRight||keys.d?1:0)-(keys.ArrowLeft||keys.a?1:0)+touchMove.x+padMove.x,z=(keys.ArrowDown||keys.s?1:0)-(keys.ArrowUp||keys.w?1:0)+touchMove.z+padMove.z;
  if(keys.q)dragAim=clamp(dragAim-dt*1.4,-1.35,1.35);if(keys.e)dragAim=clamp(dragAim+dt*1.4,-1.35,1.35);if(keys.z)dragDepth=clamp(dragDepth-dt*.9,0,1.25);if(keys.r)dragDepth=clamp(dragDepth+dt*.9,0,1.25);
