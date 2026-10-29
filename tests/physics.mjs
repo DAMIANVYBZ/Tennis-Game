@@ -25,9 +25,17 @@ m.state='rally';m.cancel();m.ball={x:5,y:1.1,z:8.9,vx:0,vy:-1,vz:8,alive:true,bo
 // Net collision and first-bounce out scoring come from actual flight.
 m.cancel();m.ball={x:0,y:.6,z:.02,vx:0,vy:0,vz:-10,alive:true,bounces:0,last:'you',serve:false,landing:{x:0,z:-8}};m.state='rally';const ai=m.points.ai;step(.02);assert.equal(m.reason,'INTO THE NET');assert.equal(m.points.ai,ai+1);
 m.state='rally';m.ball={x:5,y:.08,z:-8,vx:0,vy:-2,vz:-4,alive:true,bounces:0,last:'you',serve:false,landing:{x:5,z:-8}};step(.02);assert.equal(m.reason,'OUT');
-// Serve alternation, changeovers, and first-to-21 win-by-two.
-m.points={you:3,ai:2};m.startPoint();assert.equal(m.end,1);assert.equal(m.server,'you');
-m.points={you:20,ai:20};m.state='rally';m.score('you','WINNER');assert.equal(m.state,'point');step(2.4);m.state='rally';m.score('you','WINNER');assert.equal(m.state,'over');assert.equal(m.winner,'you');
+// Tennis scoring: serve changes every game, ends after odd games, deuce/advantage, set to 6 by two, tiebreak at 6-6.
+m.games={you:1,ai:0};m.game={you:0,ai:0};m.startPoint();assert.equal(m.end,1);assert.equal(m.server,'ai');
+m.games={you:2,ai:0};m.startPoint();assert.equal(m.end,1);assert.equal(m.server,'you');m.games={you:2,ai:1};m.startPoint();assert.equal(m.end,0);
+const win=s=>{m.state='rally';m.score(s,'WINNER')};
+m.games={you:0,ai:0};m.game={you:3,ai:3};assert.equal(m.gameScore(),'DEUCE');win('you');assert.equal(m.gameScore(),'ADVANTAGE YOU');assert.equal(m.pointLabel('you'),'AD');
+win('ai');assert.equal(m.gameScore(),'DEUCE');win('you');win('you');assert.deepEqual(m.games,{you:1,ai:0});assert.deepEqual(m.game,{you:0,ai:0});
+m.games={you:5,ai:5};m.game={you:3,ai:0};win('you');assert.equal(m.state,'point');assert.deepEqual(m.games,{you:6,ai:5});
+m.game={you:0,ai:3};win('ai');assert.equal(m.tiebreak,true);assert.deepEqual(m.games,{you:6,ai:6});
+m.game={you:0,ai:0};m.startPoint();const first=m.server;m.game={you:1,ai:0};m.startPoint();assert.notEqual(m.server,first);m.game={you:2,ai:0};m.startPoint();assert.notEqual(m.server,first);m.game={you:2,ai:1};m.startPoint();assert.equal(m.server,first);
+m.game={you:6,ai:5};win('you');assert.equal(m.state,'over');assert.equal(m.winner,'you');assert.deepEqual(m.games,{you:7,ai:6});
+m.reset();m.games={you:5,ai:3};m.game={you:3,ai:1};win('you');assert.equal(m.state,'over');m.reset();
 // Distinct shot flights, rather than cosmetic labels.
 const flight={};for(const type of ['flat','topspin','slice','lob']){m.ball={x:0,y:1,z:10};m.launch('you',{type,power:.7,over:0,aim:.6,depth:.8});flight[type]={vy:m.ball.vy,speed:Math.abs(m.ball.vz)}}
 assert.ok(flight.flat.speed>flight.topspin.speed);assert.ok(flight.lob.vy>flight.topspin.vy);assert.ok(flight.slice.speed<flight.topspin.speed);
